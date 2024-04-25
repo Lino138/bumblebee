@@ -6,8 +6,6 @@ services:
     image: bumblebee
     stdin_open: true
     tty: true
-    ports:
-    - 8080:8080
     environment: &bb_env
       DEBUG: "True"
       DB_HOST: mariadb
@@ -29,10 +27,31 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy
+      reverse-proxy:
+        condition: service_healthy
+    labels:
+      #  Enable traefik to expose the provider
+      - "traefik.enable=true"
+      # Use router 'bumblebee' points to 'bumblebee-secure'
+      - "traefik.http.routers.bumblebee.entrypoints=bumblebee-secure"
+      # Domain to listen to
+      - "traefik.http.routers.bumblebee.rule=Host(`bumblebee`)"
+      # Use resolver 'letsencrypt' https
+      - "traefik.http.routers.bumblebee.tls=true"
+      - "traefik.http.routers.bumblebee.tls.certresolver=letsencrypt"
+      # Register port for service 'bumblebee'
+      - "traefik.http.services.bumblebee.loadbalancer.server.port=8080"
+
+      # Use middleware 'bumblebee-https'
+      # Redirect to https via 'bumblebee-https'
+      - "traefik.http.middlewares.bumblebee-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.bumblebee-https.redirectscheme.port=443"
+      - "traefik.http.routers.bumblebee.middlewares=bumblebee-https"
     links:
     - mariadb:mariadb
     - redis:redis
     - keycloak:keycloak
+
 
   init:
     build: .
@@ -129,8 +148,24 @@ services:
       MYSQL_PASSWORD: toor
     env_file:
     - .env
-    ports:
-    - 9000:8080
+    labels:
+      #  Enable traefik to expose the provider
+      - "traefik.enable=true"
+      # Use router 'guacamole' points to 'guacamole-secure'
+      - "traefik.http.routers.guacamole.entrypoints=guacamole-secure"
+      # Domain to listen to
+      - "traefik.http.routers.guacamole.rule=Host(`guacamole`)"
+      # Use resolver 'letsencrypt' https
+      - "traefik.http.routers.guacamole.tls=true"
+      - "traefik.http.routers.guacamole.tls.certresolver=letsencrypt"
+      # Register port for service 'guacamole'
+      - "traefik.http.services.guacamole.loadbalancer.server.port=8080"
+
+      # Use middleware 'guacamole-https'
+      # Redirect to https via 'guacamole-https'
+      - "traefik.http.middlewares.guacamole-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.guacamole-https.redirectscheme.port=8080"
+      - "traefik.http.routers.guacamole.middlewares=guacamole-https"
     depends_on:
       guacd:
         condition: service_started
@@ -138,6 +173,9 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy
+      reverse-proxy:
+        condition: service_healthy
+
 
   keycloak:
     image: quay.io/keycloak/keycloak:24.0
@@ -148,19 +186,91 @@ services:
       KC_DB_PASSWORD: keycloak
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HOSTNAME_STRICT_HTTPS: 'false'
+      # KC_HOSTNAME_STRICT_HTTPS: 'false'
+      KC_HTTP_PORT: 8080
       KC_PROXY: edge
-    ports:
-    - 8090:8090
+    labels:
+      #  Enable traefik to expose the provider
+      - "traefik.enable=true"
+      # Use router 'keycloak' points to 'keycloak-secure'
+      - "traefik.http.routers.keycloak.entrypoints=keycloak-secure"
+      # Domain to listen to
+      - "traefik.http.routers.keycloak.rule=Host(`keycloak`)"
+      # Use resolver 'letsencrypt' https
+      - "traefik.http.routers.keycloak.tls=true"
+      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
+      # Register port for service 'keycloak'
+      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
+
+      # Use middleware 'keycloak-https'
+      # Redirect to https via 'keycloak-https'
+      - "traefik.http.middlewares.keycloak-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.keycloak-https.redirectscheme.port=8443"
+      - "traefik.http.routers.keycloak.middlewares=keycloak-https"
     volumes:
     - ./docker-init/keycloak:/opt/keycloak/data/import
     depends_on:
       mariadb:
         condition: service_healthy
-    command: start-dev --import-realm --http-port=8090 --http-enabled true --health-enabled true
+      reverse-proxy:
+        condition: service_healthy
+    command: start-dev --import-realm --http-enabled true --health-enabled true
     restart: on-failure
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8090;echo -e \"GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n\" >&3;grep \"HTTP/1.1 200 OK\" <&3"]
+
+
+  reverse-proxy:
+    image: traefik:v2.11
+    command:
+      - --providers.docker
+      # Set dashboard
+      - --api.insecure=false
+      # Only enabled containers should be exposed
+      - --providers.docker.exposedByDefault=false
+
+      # Entrypoint 'web'
+      - --entrypoints.web.address=:80
+      # Use resolver 'letsencrypt'
+      # Enable ACME with automatic SSL.
+      - --certificatesresolvers.letsencrypt.acme.email=privatuser12@gmail.com
+      - --certificatesresolvers.letsencrypt.acme.storage=/proxy/letsencrypt.json
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      # Use 'web' for challange
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+
+      # Entrypoint 'bumblebee-secure'
+      - --entrypoints.bumblebee-secure.address=:443
+      # Entrypoint 'guacamole-secure'
+      - --entrypoints.guacamole-secure.address=:9000
+      # Entrypoint 'keycloak-secure'
+      - --entrypoints.keycloak-secure.address=:8443
+    ports:
+      # Http port for lets encrypt
+      - "80:80"
+      # The bumblebee port
+      - 443:443
+      # The guacamole port
+      - 9000:8080
+      # The keycloak port
+      - 8443:8443
+      # Dashboard
+      - "8080:8080"
+    labels:
+      #  Enable traefik to expose the provider
+      - "traefik.enable=true"
+      # Use router 'challenge-http'
+      # Enable http entrypoint 'web' for http challenge
+      - "traefik.http.routers.challenge-http.entrypoints=web"
+      # The domain to listen to
+      - "traefik.http.routers.challenge-http.rule=Host(`bumblebee`)"
+    volumes:
+      # Allow listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/proxy:/proxy
+    healthcheck:
+      test: ["CMD-SHELL", "true"]  # TODO
+
 
 volumes:
   mariadb_data:
