@@ -46,11 +46,11 @@ class Nectar(object):
         self.roles = auth_ref.role_names
 
         # Establish clients
-        self.nova = nova_client.Client('2', session=sess)
-        self.allocation = allocation_client.Client('1', session=sess)
-        self.keystone = keystone_client.Client('3', session=sess)
-        self.glance = glance_client.Client('2', session=sess)
-        self.cinder = cinder_client.Client('3', session=sess)
+        self.nova = nova_client.Client('2', session=sess, region_name=settings.OS_REGION_NAME)
+        self.allocation = allocation_client.Client('1', session=sess, region_name=settings.OS_REGION_NAME)
+        self.keystone = keystone_client.Client('3', session=sess, region_name=settings.OS_REGION_NAME)
+        self.glance = glance_client.Client('2', session=sess, region_name=settings.OS_REGION_NAME)
+        self.cinder = cinder_client.Client('3', session=sess, region_name=settings.OS_REGION_NAME)
 
 
 def get_nectar():
