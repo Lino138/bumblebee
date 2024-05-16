@@ -5,13 +5,13 @@ ADD requirements.txt /app/requirements.txt
 RUN set -ex \
     && apt-get -y update \
     && apt-get -y install apache2 libapache2-mod-wsgi-py3 python3-venv python3-pip python3-mysqldb git \
+    && apt-get -y install vim \
     && python3 -m venv --system-site-packages /env \
     && /env/bin/pip install --upgrade pip \
     && /env/bin/pip install --no-cache-dir -r /app/requirements.txt \
     && apt-get purge -y --auto-remove build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get -y install vim
 
 ADD guacamole /app/guacamole
 ADD researcher_desktop /app/researcher_desktop
