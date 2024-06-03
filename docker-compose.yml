@@ -116,7 +116,7 @@ services:
     ports:
     - 3306:3306
     volumes:
-    - ./docker-data/mariadb:/var/lib/mysql
+    - /docker-data/mariadb_data:/var/lib/mysql
     - ./docker-init/mariadb:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD", "mariadb-admin", "-uroot", "-ptoor", "ping", "--silent"]
@@ -126,7 +126,7 @@ services:
     ports:
     - 6379:6379
     volumes:
-    - redis_data:/data
+    - /docker-data/redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
 
@@ -267,7 +267,7 @@ services:
     volumes:
       # Allow listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./docker-data/proxy:/proxy
+      - /docker-data/proxy_data:/proxy
     healthcheck:
       test: ["CMD-SHELL", "true"]  # TODO
 
@@ -275,3 +275,5 @@ services:
 volumes:
   mariadb_data:
   redis_data:
+  proxy_data:
+
