@@ -36,7 +36,8 @@ The project contains the the apps: `researcher_workspace`, `researcher_desktop` 
 - `./docker`: Scripts for starting services within the container.
 - `./docker-init`: Setup utils.
     - `docker-init/mariadb/01.sql`: Initialize the databases and a service user.
-- `./docker-data`: Place to store statefull data.
-    - `./docker-data/mariadb`: Files from the databse service.
-    - `./docker-data/proxy`: Files from the SSL proxy service.
+- `/docker-data`: Place to store statefull data.
+    - `./docker-data/mariadb_data`: Files from the databse service.
+    - `./docker-data/redis_data`: Files from the redis service.
+    - `./docker-data/proxy_data`: Files from the SSL proxy service.
 
