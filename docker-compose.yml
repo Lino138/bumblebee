@@ -164,7 +164,7 @@ services:
       # Use middleware 'guacamole-https'
       # Redirect to https via 'guacamole-https'
       - "traefik.http.middlewares.guacamole-https.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.guacamole-https.redirectscheme.port=8080"
+      - "traefik.http.middlewares.guacamole-https.redirectscheme.port=9000"
       - "traefik.http.routers.guacamole.middlewares=guacamole-https"
     depends_on:
       guacd:
@@ -219,6 +219,38 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8090;echo -e \"GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n\" >&3;grep \"HTTP/1.1 200 OK\" <&3"]
 
+  phpmyadmin:
+    image: phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      APACHE_PORT: 8080
+    links:
+      - mariadb:db
+    labels:
+      #  Enable traefik to expose the provider
+      - "traefik.enable=true"
+      # Use router 'phpmyadmin' points to 'phpmyadmin-secure'
+      - "traefik.http.routers.phpmyadmin.entrypoints=phpmyadmin-secure"
+      # Domain to listen to
+      - "traefik.http.routers.phpmyadmin.rule=Host(`phpmyadmin`)"
+      # Use resolver 'letsencrypt' https
+      - "traefik.http.routers.phpmyadmin.tls=true"
+      - "traefik.http.routers.phpmyadmin.tls.certresolver=letsencrypt"
+      # Register port for service 'phpmyadmin'
+      - "traefik.http.services.phpmyadmin.loadbalancer.server.port=8080"
+
+      # Use middleware 'phpmyadmin-https'
+      # Redirect to https via 'phpmyadmin-https'
+      - "traefik.http.middlewares.phpmyadmin-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.phpmyadmin-https.redirectscheme.port=8306"
+      - "traefik.http.routers.phpmyadmin.middlewares=phpmyadmin-https"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      reverse-proxy:
+        condition: service_healthy
 
   reverse-proxy:
     image: traefik:v2.11
@@ -245,15 +277,19 @@ services:
       - --entrypoints.guacamole-secure.address=:9000
       # Entrypoint 'keycloak-secure'
       - --entrypoints.keycloak-secure.address=:8443
+      # Entrypoint 'phpmyadmin-secure'
+      - --entrypoints.phpmyadmin-secure.address=:8306
     ports:
       # Http port for lets encrypt
       - "80:80"
       # The bumblebee port
       - 443:443
       # The guacamole port
-      - 9000:8080
+      - 9000:9000
       # The keycloak port
       - 8443:8443
+      # The phpmyadmin port
+      - 8306:8306
       # Dashboard
       - "8080:8080"
     labels:
