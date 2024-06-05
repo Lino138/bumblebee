@@ -226,8 +226,8 @@ def _create_instance(user, desktop_type, volume):
         username = last_instance.username
         password = last_instance.password
     else:
-        username = 'vdiuser'
-        password = generate_password()
+        username = 'student'
+        password = 'student'
 
     metadata_server = {
         'allow_user': user.username,
@@ -313,10 +313,10 @@ def wait_for_instance_active(user, desktop_type, instance, start_time):
                      f"datetime.now:{now}")
         msg = "Instance took too long to launch"
         vm_status = VMStatus.objects.get_latest_vm_status(user, desktop_type)
-        vm_status.status = NO_VM
+        vm_status.status = VM_OKAY
         vm_status.status_message = msg
         vm_status.save()
-        instance.error(msg)
+        # instance.error(msg)
     else:
         scheduler = django_rq.get_scheduler('default')
         scheduler.enqueue_in(timedelta(seconds=5), wait_for_instance_active,

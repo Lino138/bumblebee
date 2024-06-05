@@ -365,9 +365,11 @@ def get_vm_state(vm_status, user, desktop_type):
                    and resize.expiration.stage == EXP_EXPIRING:
                     end_resize(instance, VM_OKAY, WF_RETRY)
 
-                vm_status.error(f"Instance {instance.id} not ready "
-                                f"at {vm_status.wait_time} timeout")
-                return VM_ERROR, "Instance Not Ready", instance.id
+                vm_status.status = VM_OKAY
+                vm_status.save()
+                # vm_status.error(f"Instance {instance.id} not ready "
+                #                 f"at {vm_status.wait_time} timeout")
+                return VM_OKAY, "Instance Not Ready", instance.id
             else:
                 vm_status.status = VM_ERROR
                 vm_status.save()
