@@ -141,6 +141,7 @@ services:
     restart: unless-stopped
     environment:
       GUACD_HOSTNAME: guacd
+      # GUACD_PORT: 8080
       # Guacamole has to share the database with Bumblebee.
       MYSQL_HOSTNAME: mariadb
       MYSQL_DATABASE: bumblebee
@@ -222,12 +223,10 @@ services:
   phpmyadmin:
     image: phpmyadmin
     environment:
-      PMA_HOST: db
+      PMA_HOST: mariadb
       PMA_PORT: 3306
       PMA_ARBITRARY: 1
       APACHE_PORT: 8080
-    links:
-      - mariadb:db
     labels:
       #  Enable traefik to expose the provider
       - "traefik.enable=true"
