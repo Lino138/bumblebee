@@ -68,13 +68,13 @@ class ProjectForm(forms.ModelForm):
         fields = ['title', 'description', 'FoR_code', 'FoR_code2',
                   'chief_investigator']
 
-    title = forms.CharField(max_length=100)
+    title = forms.CharField(max_length=100, required=False)
     title.widget.attrs['class'] = 'form-control'
-    description = forms.CharField(widget=forms.Textarea)
+    description = forms.CharField(widget=forms.Textarea, required=False)
     description.widget.attrs['class'] = 'form-control'
-    chief_investigator = forms.EmailField(max_length=100)
+    chief_investigator = forms.EmailField(max_length=100, required=False)
     chief_investigator.widget.attrs['class'] = 'form-control'
-    FoR_code = forms.ChoiceField(choices=FOR_CODE_CHOICES)
+    FoR_code = forms.ChoiceField(choices=FOR_CODE_CHOICES, required=False)
     FoR_code.widget.template_name = f"{WIDGETS}/FoR_code_select.html"
     FoR_code.widget.option_template_name = \
         f"{WIDGETS}/FoR_code_select_option.html"

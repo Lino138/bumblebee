@@ -196,7 +196,7 @@ OIDC_ALLOW_GROUPS = get_setting('OIDC_ALLOW_GROUPS').split(',') \
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Australia/Melbourne'
+TIME_ZONE = 'Europe/Brussels'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -291,7 +291,7 @@ INTERNAL_IPS = "127.0.0.1"
 NEXT_PAGE = '/home'
 
 # Current version number for the terms and conditions
-TERMS_VERSION = int(get_setting('TERMS_VERSION', 1))
+TERMS_VERSION = int(get_setting('TERMS_VERSION', 0))
 
 # Users are limited to this number of workspaces.  Use zero for unlimited
 LIMIT_WORKSPACES_PER_USER = int(get_setting('LIMIT_WORKSPACES_PER_USER', 1))
