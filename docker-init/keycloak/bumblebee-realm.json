@@ -1,6 +1,8 @@
 {
   "id" : "bumblebee",
   "realm" : "bumblebee",
+  "displayName": "Bumblebee",
+  "displayNameHtml": "Bumblebee",
   "notBefore" : 0,
   "defaultSignatureAlgorithm" : "RS256",
   "revokeRefreshToken" : false,
