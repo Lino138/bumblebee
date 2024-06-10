@@ -36,9 +36,5 @@ Procfile
 dev
 researcher_workspace/initial_data.yaml
 
-### Docker
-docker-init/mariadb_data
-docker/proxy/letsencrypt.json
-
 ### PyCharm IDE
 .idea/
