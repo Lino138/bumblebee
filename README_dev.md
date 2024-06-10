@@ -1,5 +1,12 @@
 ## Developer Documentation
 
+TODO:
+Workspace -> bb-project
+Instance/VM -> bb-module
+entity -> gua-user
+TABLE:
+vm_manager_cloudresource -> tells about who owns the vm -> required for setting new once
+vm_manager_vmstatus -> tells about who can access the vm -> required for presenting VM
 
 ## Python package `bumblebee`
 The environment and the utils for Bumblebee can be installed as python package.
@@ -26,6 +33,8 @@ The project contains the the apps: `researcher_workspace`, `researcher_desktop` 
     - `./researcher_desktop/urls.py`: The different page in the web side.
 - `./vm_manager`: App for TODO
      - `./vm_manager/urls.py`
+- `./guacamole`: App for TODO
+    - `./guacamole/migrations`: Create database structure.
 
 
 ## Docker structure:
