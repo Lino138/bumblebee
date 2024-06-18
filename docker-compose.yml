@@ -264,7 +264,7 @@ services:
       - --entrypoints.web.address=:80
       # Use resolver 'letsencrypt'
       # Enable ACME with automatic SSL.
-      - --certificatesresolvers.letsencrypt.acme.email=privatuser12@gmail.com
+      - --certificatesresolvers.letsencrypt.acme.email=foo@foo.com
       - --certificatesresolvers.letsencrypt.acme.storage=/proxy/letsencrypt.json
       - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
       # Use 'web' for challange
