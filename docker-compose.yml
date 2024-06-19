@@ -260,15 +260,11 @@ services:
       # Only enabled containers should be exposed
       - --providers.docker.exposedByDefault=false
 
-      # Entrypoint 'web'
-      - --entrypoints.web.address=:80
       # Use resolver 'letsencrypt'
       # Enable ACME with automatic SSL.
       - --certificatesresolvers.letsencrypt.acme.email=foo@foo.com
       - --certificatesresolvers.letsencrypt.acme.storage=/proxy/letsencrypt.json
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
-      # Use 'web' for challange
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
 
       # Entrypoint 'bumblebee-secure'
       - --entrypoints.bumblebee-secure.address=:443
@@ -279,8 +275,6 @@ services:
       # Entrypoint 'phpmyadmin-secure'
       - --entrypoints.phpmyadmin-secure.address=:8306
     ports:
-      # Http port for lets encrypt
-      - "80:80"
       # The bumblebee port
       - 443:443
       # The guacamole port
@@ -290,15 +284,10 @@ services:
       # The phpmyadmin port
       - 8306:8306
       # Dashboard
-      - "8080:8080"
+      # - "8080:8080"
     labels:
       #  Enable traefik to expose the provider
       - "traefik.enable=true"
-      # Use router 'challenge-http'
-      # Enable http entrypoint 'web' for http challenge
-      - "traefik.http.routers.challenge-http.entrypoints=web"
-      # The domain to listen to
-      - "traefik.http.routers.challenge-http.rule=Host(`bumblebee`)"
     volumes:
       # Allow listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
