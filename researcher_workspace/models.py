@@ -82,7 +82,7 @@ class Project(models.Model):
     project_admin = models.ForeignKey(User, on_delete=models.PROTECT, )
     created = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=100)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     sensitive_data = models.BooleanField(default=False)
     FoR_code = models.CharField(max_length=6, choices=[])
     FoR_code2 = models.CharField(max_length=6, choices=[], blank=True)
