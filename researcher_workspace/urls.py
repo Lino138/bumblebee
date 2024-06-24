@@ -69,7 +69,8 @@ else:
 
 
 urlpatterns = [
-    path('', views.index, name='index'),  
+    path('admin/', admin.site.urls),
+    path('', include('researcher_workspace.urls')),
     path('home/', views.home, name='home'),
     path('select_vm/', views.home, name='select_vm'),  # Handle form submission
     path('desktop/<str:desktop_name>/', views.desktop_details, name='desktop_details'),
