@@ -18,7 +18,7 @@ def create_default_vm(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('researcher_workspace', '0009_alter_project_description'),
+        ('researcher_workspace', '0010_add_default_vm'),
     ]
 
     operations = [
