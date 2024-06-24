@@ -22,62 +22,52 @@
                     <!-- Greeting and VM Selection -->
                     <div class="desktop-info col-md-12 col-lg-8">
                         <p class="lead text-center text-white">Good {% time_of_day %} {{ user.first_name }}!</p>
-                        <div id="desktop-computer">
-                            <img id="desktop-computer-frame" src="{% static 'img/desktop-computer.svg' %}">
-                            <div id="desktop-computer-screen" class="bg-white d-flex align-items-center justify-content-center">
+                        <div id="vm-selector" class="vm-selector">
+                            <!-- Tabs -->
+                            <ul class="nav nav-tabs" id="vmTab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="linux-tab" data-toggle="tab" href="#linux" role="tab" aria-controls="linux" aria-selected="true">Natives Linux</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="recent-tab" data-toggle="tab" href="#recent" role="tab" aria-controls="recent" aria-selected="false">Zuletzt verwendet</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="all-tab" data-toggle="tab" href="#all" role="tab" aria-controls="all" aria-selected="false">Alle Kurse</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content" id="vmTabContent">
+                                <!-- Linux VMs Tab -->
+                                <div class="tab-pane fade show active" id="linux" role="tabpanel" aria-labelledby="linux-tab">
+                                    <div class="list-group">
+                                        {% for vm in vms %}
+                                            <button type="button" class="list-group-item list-group-item-action vm-item" data-vm-id="{{ vm.pk }}" data-vm-name="{{ vm.name }}" data-vm-description="{{ vm.description }}" data-vm-logo="{{ vm.logo }}">
+                                                <img src="{{ vm.logo }}" alt="{{ vm.name }}" class="vm-logo"> {{ vm.name }}
+                                            </button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <!-- Recently Used Tab -->
+                                <div class="tab-pane fade" id="recent" role="tabpanel" aria-labelledby="recent-tab">
+                                    <p>Recently used VMs will appear here.</p>
+                                </div>
+                                <!-- All Courses Tab -->
+                                <div class="tab-pane fade" id="all" role="tabpanel" aria-labelledby="all-tab">
+                                    <p>All available courses will appear here.</p>
+                                </div>
+                            </div>
+                            <!-- VM Details Section -->
+                            <div class="vm-details mt-4">
                                 <form method="post" action="{% url 'select_vm' %}">
                                     {% csrf_token %}
-                                    <div class="form-group">
-                                        <label for="vm_chooser" class="text-white">Choose your VM:</label>
-                                        <select id="vm_chooser" name="vm_chooser" class="form-control">
-                                            {% for vm in vms %}
-                                                <option value="{{ vm.pk }}">{{ vm.name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
+                                    <input type="hidden" id="vm_chooser" name="vm_chooser">
+                                    <h3 id="vm-name"></h3>
+                                    <p id="vm-description"></p>
+                                    <img id="vm-logo" src="" alt="VM Logo" style="max-width: 100px;">
                                     <button type="submit" class="btn btn-primary mt-3">Select VM</button>
                                 </form>
-                                {% if selected_vm %}
-                                    <div class="mt-3">
-                                        <h3>Selected VM: {{ selected_vm.name }}</h3>
-                                        <p>{{ selected_vm.description }}</p>
-                                        <img src="{{ selected_vm.logo }}" alt="{{ selected_vm.name }} logo" style="max-width: 100px;">
-                                    </div>
-                                {% endif %}
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-        <!-- Desktop Library -->
-        <section id="desktop-library">
-            <div class="container py-5">
-                <div class="row">
-                    <h1 class="mb-4">Desktop Library</h1>
-                    {% for module in modules %}
-                        <div class="col-12 col-sm-6 col-md-4 mb-3">
-                            {{ module }}
-                        </div>
-                    {% endfor %}
-                    {% if not modules %}
-                        {% if selected_project %}
-                            <div>
-                                <h3>You don't have access to any features</h3>
-                                <p>This project doesn't currently have access to any of the wonderful features of our service.</p>
-                            </div>
-                        {% elif projects %}
-                            <div>
-                                <h3>Your project(s) are pending approval by their ARO</h3>
-                                <p>You can't access a project until we have received approval from the project's nominated ARO. The ARO specified in your project will be notified, and we will approve your project as soon as we receive confirmation from them.</p>
-                            </div>
-                        {% else %}
-                            <div>
-                                <h3>You don't have a project yet</h3>
-                                <p>Please click the "Add New Project" button above to create a project. Once you have a project you can start adding features to it in the "Discover" tab.</p>
-                            </div>
-                        {% endif %}
-                    {% endif %}
                 </div>
             </div>
         </section>
@@ -93,10 +83,24 @@
     {% endif %}
 {% endif %}
 {% endblock content %}
+
 {% block script %}
 <script>
-{% for script in scripts %}
-    {{ script }}
-{% endfor %}
+document.addEventListener('DOMContentLoaded', function () {
+    const vmItems = document.querySelectorAll('.vm-item');
+    const vmChooser = document.getElementById('vm_chooser');
+    const vmName = document.getElementById('vm-name');
+    const vmDescription = document.getElementById('vm-description');
+    const vmLogo = document.getElementById('vm-logo');
+
+    vmItems.forEach(item => {
+        item.addEventListener('click', function () {
+            vmChooser.value = this.getAttribute('data-vm-id');
+            vmName.textContent = this.getAttribute('data-vm-name');
+            vmDescription.textContent = this.getAttribute('data-vm-description');
+            vmLogo.src = this.getAttribute('data-vm-logo');
+        });
+    });
+});
 </script>
 {% endblock script %}
