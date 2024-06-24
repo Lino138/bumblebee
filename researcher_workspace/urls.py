@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic.base import RedirectView
 
+
 from mozilla_django_oidc import views as oidc_views
 
 from . import views
@@ -66,9 +67,12 @@ else:
     ]
     
 
+
 urlpatterns = [
+    path('', views.home, name='home'),  # Maps the root URL to the home view
     path('home/', views.home, name='home'),
-    path('select_vm/', views.home, name='select_vm'),  # This handles the form submission
+    path('select_vm/', views.home, name='select_vm'),  # Handles the form submission
+    # Add other paths as needed
 ]
 
 handler404 = views.custom_page_not_found

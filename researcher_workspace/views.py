@@ -69,10 +69,10 @@ def _get_users_for_report():
 
 @login_required(login_url='login')
 def home(request):
-    projects = Project.objects.filter(user=request.user)  # Assuming you have a Project model linked to the user
-    selected_project = projects.first() if projects else None
+    projects = Project.objects.filter(project_admin=request.user)
+    selected_project = projects.first() if projects.exists() else None
     vms = VM.objects.all()
-    
+
     if request.method == 'POST':
         selected_vm_pk = request.POST.get('vm_chooser')
         selected_vm = VM.objects.get(pk=selected_vm_pk)
@@ -81,14 +81,14 @@ def home(request):
             'selected_vm': selected_vm,
             'projects': projects,
             'selected_project': selected_project,
-            'modules': selected_project.modules.all() if selected_project else [],
+            'modules': selected_project.permissions.all() if selected_project else [],
         })
     else:
         return render(request, 'home/home.html', {
             'vms': vms,
             'projects': projects,
             'selected_project': selected_project,
-            'modules': selected_project.modules.all() if selected_project else [],
+            'modules': selected_project.permissions.all() if selected_project else [],
         })
 
 @login_required(login_url='login')
