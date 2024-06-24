@@ -312,106 +312,68 @@ def on_logout(sender, user, request, **kwargs):
         logger.info('User %s has logged out', request.user.get_full_name())
 
 
-@login_required(login_url='login')
-@user_passes_test(test_func=agreed_to_terms, login_url='terms',
-                  redirect_field_name=None)
-@user_passes_test(test_func=not_support_staff, login_url='staff_home',
-                  redirect_field_name=None)
-def home(request):
-    # Handle edge cases
-    if (hasattr(settings, 'GENERAL_WARNING_MESSAGE')
-            and bool(settings.GENERAL_WARNING_MESSAGE)):
-        messages.warning(
-            request, format_html(settings.GENERAL_WARNING_MESSAGE))
+# @login_required(login_url='login')
+# @user_passes_test(test_func=agreed_to_terms, login_url='terms',
+#                   redirect_field_name=None)
+# @user_passes_test(test_func=not_support_staff, login_url='staff_home',
+#                   redirect_field_name=None)
+# def home(request):
+#     # Handle edge cases
+#     if (hasattr(settings, 'GENERAL_WARNING_MESSAGE')
+#             and bool(settings.GENERAL_WARNING_MESSAGE)):
+#         messages.warning(
+#             request, format_html(settings.GENERAL_WARNING_MESSAGE))
 
-    # Get user's Project(s)
-    project_id = request.POST.get('project', None)
-    current_projects = Project.objects.filter(project_admin=request.user).exclude(ARO_approval=False).order_by('-created')
-    if project_id:
-        selected_project = Project.objects.get_project_by_untrusted_project_id(project_id, request.user)
-        if selected_project.ARO_approval:
-            request.user.profile.set_last_selected_project(selected_project)
-        else:
-            selected_project = request.user.profile.get_last_selected_project()
-    else:
-        selected_project = request.user.profile.get_last_selected_project()
+#     # Get user's Project(s)
+#     project_id = request.POST.get('project', None)
+#     current_projects = Project.objects.filter(project_admin=request.user).exclude(ARO_approval=False).order_by('-created')
+#     if project_id:
+#         selected_project = Project.objects.get_project_by_untrusted_project_id(project_id, request.user)
+#         if selected_project.ARO_approval:
+#             request.user.profile.set_last_selected_project(selected_project)
+#         else:
+#             selected_project = request.user.profile.get_last_selected_project()
+#     else:
+#         selected_project = request.user.profile.get_last_selected_project()
 
-    if selected_project:
-        selected_project_features = selected_project.permissions.all()
-    else:
-        selected_project_features = []
+#     if selected_project:
+#         selected_project_features = selected_project.permissions.all()
+#     else:
+#         selected_project_features = []
 
-    # Render the features to display on the user's Do tab
-    active_module = None
-    modules = []
-    scripts = []
-    for feature in selected_project_features:
-        feature_conf = apps.app_configs.get(feature.app_name)
-        if not feature_conf:
-            # User has been enabled for a feature that is not implemented
-            continue
-        feature_application = feature_conf.module
-        feature_modules = feature_application.views.render_modules(request)
+#     # Render the features to display on the user's Do tab
+#     active_module = None
+#     modules = []
+#     scripts = []
+#     for feature in selected_project_features:
+#         feature_conf = apps.app_configs.get(feature.app_name)
+#         if not feature_conf:
+#             # User has been enabled for a feature that is not implemented
+#             continue
+#         feature_application = feature_conf.module
+#         feature_modules = feature_application.views.render_modules(request)
 
-        for module, alt_module, script, state in feature_modules:
-            if state == NO_VM:
-                modules.append(module)
-            else:
-                modules.append(alt_module)
-                active_module = module
-            scripts.append(script)
+#         for module, alt_module, script, state in feature_modules:
+#             if state == NO_VM:
+#                 modules.append(module)
+#             else:
+#                 modules.append(alt_module)
+#                 active_module = module
+#             scripts.append(script)
 
-#    # Render the features to display on the Discover tab
-#    discover_features = []
-#    # Get the features the user has already requested for this project
-#    requested_features = [request.requested_feature for request in PermissionRequest.objects.filter(project=selected_project, accepted=None)]
-#    # Render all the features
-#    for feature in Feature.objects.filter(feature_or_service=True):
-#        # Create the variables necessary for rendering
-#        previously_requested = feature in requested_features
-#        project_already_has_feature = feature in selected_project_features
-#        # If the feature is available, create the form for requesting it
-#        if feature.currently_available:
-#            try:
-#                permission_feature_options = Permission.objects.get(project=selected_project, feature=feature).feature_options.all()
-#            except Permission.DoesNotExist:
-#                permission_feature_options = FeatureOptions.objects.none()
-#            # The options you can request are the options on the feature, minus the options you already have access to
-#            # request_form_options = [(option.id, option.name) for option in feature.options.difference(permission_feature_options)]
-#            request_form_options = [(option.id, option.name) for option in permission_feature_options]
-#            request_form = PermissionRequestForm(choices=request_form_options) if request_form_options else ""
-#            if request_form:
-#                try:
-#                    # If you've already requested access, then pre-tick the options you requested
-#                    requested_feature_options = PermissionRequest.objects.get(project=selected_project, requested_feature=feature, accepted=None).feature_options.values_list('id', flat=True)
-#                    request_form.fields["feature_options"].initial = list(requested_feature_options)
-#                except PermissionRequest.DoesNotExist:
-#                    pass
-#        else:
-#            request_form = ""
-#        # User can request access if there's a valid request form, or if the feature has not been granted access and there is not an already active request
-#        requestable = request_form or (not project_already_has_feature and not previously_requested)
-#        feature_html = loader.render_to_string('researcher_workspace/home/discover/feature.html',
-#            {'feature': feature, 'previously_requested': previously_requested,
-#             'project_already_has_feature': project_already_has_feature,
-#             'request_form': request_form, 'requestable': requestable}, request)
-#        discover_features.append(feature_html)
-#
-    # Get the services to display on the Discover tab
-    # discover_services = [loader.render_to_string('researcher_workspace/home/discover/service.html',
-    #        {'service': service}, request) for service in Feature.objects.filter(feature_or_service=False)]
-    context = {
-        'active_module': active_module,
-        'modules': modules,
-        'scripts': scripts,
-        'projects': current_projects,
-        'selected_project': selected_project,
-        # 'discover_features': discover_features,  # unused
-        # 'discover_services': discover_services   # unused
-    }
 
-    # Render
-    return render(request, 'researcher_workspace/home/home.html', context)
+#     context = {
+#         'active_module': active_module,
+#         'modules': modules,
+#         'scripts': scripts,
+#         'projects': current_projects,
+#         'selected_project': selected_project,
+#         # 'discover_features': discover_features,  # unused
+#         # 'discover_services': discover_services   # unused
+#     }
+
+#     # Render
+#     return render(request, 'researcher_workspace/home/home.html', context)
 
 
 # def login(request):
