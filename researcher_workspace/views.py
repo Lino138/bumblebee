@@ -93,7 +93,7 @@ def home(request):
         selected_vm = VM.objects.get(pk=selected_vm_pk)
         print("Selected VM:", selected_vm)
 
-    return render(request, 'home/home.html', {
+    return render(request, 'researcher_workspace/home/home.html', {
         'vms': vms,
         'selected_vm': selected_vm,
         'projects': projects,
