@@ -25,20 +25,30 @@
                         <div id="vm-selector" class="vm-selector">
                             <!-- VM List -->
                             <div class="list-group">
-                                {% for vm in vms %}
-                                    <button type="button" class="list-group-item list-group-item-action vm-item" data-vm-id="{{ vm.pk }}" data-vm-name="{{ vm.name }}" data-vm-description="{{ vm.description }}" data-vm-logo="{{ vm.logo }}">
-                                        <img src="{{ vm.logo }}" alt="{{ vm.name }}" class="vm-logo"> {{ vm.name }}
-                                    </button>
-                                {% endfor %}
+                                {% if vms %}
+                                    {% for vm in vms %}
+                                        <button type="button" class="list-group-item list-group-item-action vm-item" data-vm-id="{{ vm.pk }}" data-vm-name="{{ vm.name }}" data-vm-description="{{ vm.description }}" data-vm-logo="{{ vm.logo }}">
+                                            <img src="{{ vm.logo }}" alt="{{ vm.name }}" class="vm-logo"> {{ vm.name }}
+                                        </button>
+                                    {% endfor %}
+                                {% else %}
+                                    <p>No VMs available</p>
+                                {% endif %}
                             </div>
                             <!-- VM Details Section -->
                             <div class="vm-details mt-4">
                                 <form method="post" action="{% url 'select_vm' %}">
                                     {% csrf_token %}
                                     <input type="hidden" id="vm_chooser" name="vm_chooser">
-                                    <h3 id="vm-name"></h3>
-                                    <p id="vm-description"></p>
-                                    <img id="vm-logo" src="" alt="VM Logo" style="max-width: 100px;">
+                                    {% if selected_vm %}
+                                        <h3 id="vm-name">{{ selected_vm.name }}</h3>
+                                        <p id="vm-description">{{ selected_vm.description }}</p>
+                                        <img id="vm-logo" src="{{ selected_vm.logo }}" alt="VM Logo" style="max-width: 100px;">
+                                    {% else %}
+                                        <h3 id="vm-name">No VM found</h3>
+                                        <p id="vm-description">No VM found</p>
+                                        <img id="vm-logo" src="" alt="VM Logo" style="max-width: 100px;">
+                                    {% endif %}
                                     <button type="submit" class="btn btn-primary mt-3">Select VM</button>
                                 </form>
                             </div>
