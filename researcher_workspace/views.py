@@ -78,16 +78,20 @@ def desktop_details(request, desktop_name):
 
 @login_required(login_url='login')
 def home(request):
-    # could filter for condition in request (Exam or something other)
-    # projects = Project.objects.filter(project_admin=request.user)
     projects = Project.objects.all()
     selected_project = projects.first() if projects.exists() else None
     vms = VM.objects.all()
     selected_vm = None
 
+    # Debug statements to print the fetched data to the console
+    print("Projects:", projects)
+    print("Selected Project:", selected_project)
+    print("VMs:", vms)
+
     if request.method == 'POST':
         selected_vm_pk = request.POST.get('vm_chooser')
         selected_vm = VM.objects.get(pk=selected_vm_pk)
+        print("Selected VM:", selected_vm)
 
     return render(request, 'home/home.html', {
         'vms': vms,
