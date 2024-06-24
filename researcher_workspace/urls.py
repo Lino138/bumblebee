@@ -72,7 +72,7 @@ urlpatterns = [
     path('', views.home, name='home'),  # Home view
     path('home/', views.home, name='home'),
     path('select_vm/', views.home, name='select_vm'),  # Handle form submission
-    path('desktop/<int:desktop_name>/', views.desktop_details, name='desktop_details'), 
+    path('desktop/<str:desktop_name>/', views.desktop_details, name='desktop_details'), 
 ]
 
 handler404 = views.custom_page_not_found
