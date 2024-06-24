@@ -70,15 +70,6 @@ class ProjectForm(forms.ModelForm):
 
     title = forms.CharField(max_length=100)
     title.widget.attrs['class'] = 'form-control'
-    description = forms.CharField(widget=forms.Textarea)
-    description.widget.attrs['class'] = 'form-control'
-    chief_investigator = forms.EmailField(max_length=100)
-    chief_investigator.widget.attrs['class'] = 'form-control'
-    FoR_code = forms.ChoiceField(choices=FOR_CODE_CHOICES)
-    FoR_code.widget.template_name = f"{WIDGETS}/FoR_code_select.html"
-    FoR_code.widget.option_template_name = \
-        f"{WIDGETS}/FoR_code_select_option.html"
-    FoR_code.widget.attrs['class'] = 'alt form-control'
     FoR_code2 = forms.ChoiceField(choices=FOR_CODE_CHOICES, required=False)
     FoR_code2.widget.template_name = f"{WIDGETS}/FoR_code_select.html"
     FoR_code2.widget.option_template_name = \
