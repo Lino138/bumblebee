@@ -59,24 +59,3 @@
     {% endif %}
 {% endif %}
 {% endblock content %}
-
-{% block script %}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const vmItems = document.querySelectorAll('.vm-item');
-    const vmChooser = document.getElementById('vm_chooser');
-    const vmName = document.getElementById('vm-name');
-    const vmDescription = document.getElementById('vm-description');
-    const vmLogo = document.getElementById('vm-logo');
-
-    vmItems.forEach(item => {
-        item.addEventListener('click', function () {
-            vmChooser.value = this.getAttribute('data-vm-id');
-            vmName.textContent = this.getAttribute('data-vm-name');
-            vmDescription.textContent = this.getAttribute('data-vm-description');
-            vmLogo.src = this.getAttribute('data-vm-logo');
-        });
-    });
-});
-</script>
-{% endblock script %}
