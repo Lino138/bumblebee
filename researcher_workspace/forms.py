@@ -65,8 +65,7 @@ class ProjectForm(forms.ModelForm):
 
     class Meta:
         model = Project
-        fields = ['title', 'description', 'FoR_code', 'FoR_code2',
-                  'chief_investigator']
+        fields = ['title', 'FoR_code2']
 
     title = forms.CharField(max_length=100)
     title.widget.attrs['class'] = 'form-control'
