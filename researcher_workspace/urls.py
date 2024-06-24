@@ -40,7 +40,9 @@ urlpatterns = [
     path('learn/', views.learn, name='learn'),
     path('login/fail/', views.login_fail, name='login_fail'),
     path('healthcheck/status', include('health_check.urls')),
-    path('healthcheck/', views.healthcheck, name='healthcheck')
+    path('healthcheck/', views.healthcheck, name='healthcheck'),
+    path('select_vm/', views.home, name='select_vm'),  # Handle form submission
+    path('desktop/<str:desktop_name>/', views.desktop_details, name='desktop_details'),
 ]
 
 if settings.USE_OIDC:
@@ -67,13 +69,6 @@ else:
     ]
     
 
-
-urlpatterns = [
-    path('', views.index, name='index'),  
-    path('home/', views.home, name='home'),
-    path('select_vm/', views.home, name='select_vm'),  # Handle form submission
-    path('desktop/<str:desktop_name>/', views.desktop_details, name='desktop_details'),
-]
 
 handler404 = views.custom_page_not_found
 handler500 = views.custom_page_error

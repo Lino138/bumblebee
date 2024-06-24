@@ -81,24 +81,19 @@ def home(request):
     projects = Project.objects.filter(project_admin=request.user)
     selected_project = projects.first() if projects.exists() else None
     vms = VM.objects.all()
+    selected_vm = None
 
     if request.method == 'POST':
         selected_vm_pk = request.POST.get('vm_chooser')
         selected_vm = VM.objects.get(pk=selected_vm_pk)
-        return render(request, 'home/home.html', {
-            'vms': vms,
-            'selected_vm': selected_vm,
-            'projects': projects,
-            'selected_project': selected_project,
-            'modules': selected_project.permissions.all() if selected_project else [],
-        })
-    else:
-        return render(request, 'home/home.html', {
-            'vms': vms,
-            'projects': projects,
-            'selected_project': selected_project,
-            'modules': selected_project.permissions.all() if selected_project else [],
-        })
+
+    return render(request, 'home/home.html', {
+        'vms': vms,
+        'selected_vm': selected_vm,
+        'projects': projects,
+        'selected_project': selected_project,
+        'modules': selected_project.permissions.all() if selected_project else [],
+    })
 
 @login_required(login_url='login')
 def user_search(request):

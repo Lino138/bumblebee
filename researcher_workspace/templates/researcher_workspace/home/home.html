@@ -3,100 +3,100 @@
 {% load datetime %}
 
 {% block content %}
-  {% if user.is_authenticated %}
+{% if user.is_authenticated %}
     {% if projects %}
-      <section class="desktop-section bg-secondary hex-bg">
-        <div class="desktop-container container">
-          <div class="row py-5">
-            <!-- Workspace Information -->
-            <div class="workspace-info col-md-12 col-lg-4">
-              <h6 class="text-white mb-3">
-                WORKSPACE
-                <a href="{% url 'project_edit' project_id=selected_project.id %}" class="btn btn-xs btn-link">
-                  <i class="fas fa-pen"></i> Edit
-                </a>
-              </h6>
-              <h1 class="workspace-title h2 text-white mb-3">{{ selected_project.title }}</h1>
-              <p class="workspace-description text-white mb-3">{{ selected_project.description }}</p>
-            </div>
-            <!-- Greeting and VM Selection -->
-            <div class="desktop-info col-md-12 col-lg-8">
-              <p class="lead text-center text-white">Good {% time_of_day %} {{ user.first_name }}!</p>
-              <div id="desktop-computer">
-                <img id="desktop-computer-frame" src="{% static 'img/desktop-computer.svg' %}">
-                <div id="desktop-computer-screen" class="bg-white d-flex align-items-center justify-content-center">
-                  <form method="post" action="{% url 'select_vm' %}">
-                    {% csrf_token %}
-                    <div class="form-group">
-                      <label for="vm_chooser" class="text-white">Choose your VM:</label>
-                      <select id="vm_chooser" name="vm_chooser" class="form-control">
-                        {% for vm in vms %}
-                          <option value="{{ vm.pk }}">{{ vm.name }}</option>
-                        {% endfor %}
-                      </select>
+        <section class="desktop-section bg-secondary hex-bg">
+            <div class="desktop-container container">
+                <div class="row py-5">
+                    <!-- Workspace Information -->
+                    <div class="workspace-info col-md-12 col-lg-4">
+                        <h6 class="text-white mb-3">
+                            WORKSPACE
+                            <a href="{% url 'project_edit' project_id=selected_project.id %}" class="btn btn-xs btn-link">
+                                <i class="fas fa-pen"></i> Edit
+                            </a>
+                        </h6>
+                        <h1 class="workspace-title h2 text-white mb-3">{{ selected_project.title }}</h1>
+                        <p class="workspace-description text-white mb-3">{{ selected_project.description }}</p>
                     </div>
-                    <button type="submit" class="btn btn-primary mt-3">Select VM</button>
-                  </form>
-                  {% if selected_vm %}
-                    <div class="mt-3">
-                      <h3>Selected VM: {{ selected_vm.name }}</h3>
-                      <p>{{ selected_vm.description }}</p>
-                      <img src="{{ selected_vm.logo }}" alt="{{ selected_vm.name }} logo" style="max-width: 100px;">
+                    <!-- Greeting and VM Selection -->
+                    <div class="desktop-info col-md-12 col-lg-8">
+                        <p class="lead text-center text-white">Good {% time_of_day %} {{ user.first_name }}!</p>
+                        <div id="desktop-computer">
+                            <img id="desktop-computer-frame" src="{% static 'img/desktop-computer.svg' %}">
+                            <div id="desktop-computer-screen" class="bg-white d-flex align-items-center justify-content-center">
+                                <form method="post" action="{% url 'select_vm' %}">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="vm_chooser" class="text-white">Choose your VM:</label>
+                                        <select id="vm_chooser" name="vm_chooser" class="form-control">
+                                            {% for vm in vms %}
+                                                <option value="{{ vm.pk }}">{{ vm.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary mt-3">Select VM</button>
+                                </form>
+                                {% if selected_vm %}
+                                    <div class="mt-3">
+                                        <h3>Selected VM: {{ selected_vm.name }}</h3>
+                                        <p>{{ selected_vm.description }}</p>
+                                        <img src="{{ selected_vm.logo }}" alt="{{ selected_vm.name }} logo" style="max-width: 100px;">
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-                  {% endif %}
                 </div>
-              </div>
             </div>
-          </div>
-        </div>
-      </section>
-      <!-- Desktop Library -->
-      <section id="desktop-library">
-        <div class="container py-5">
-          <div class="row">
-            <h1 class="mb-4">Desktop Library</h1>
-            {% for module in modules %}
-              <div class="col-12 col-sm-6 col-md-4 mb-3">
-                {{ module }}
-              </div>
-            {% endfor %}
-            {% if not modules %}
-              {% if selected_project %}
-                <div>
-                  <h3>You don't have access to any features</h3>
-                  <p>This project doesn't currently have access to any of the wonderful features of our service.</p>
+        </section>
+        <!-- Desktop Library -->
+        <section id="desktop-library">
+            <div class="container py-5">
+                <div class="row">
+                    <h1 class="mb-4">Desktop Library</h1>
+                    {% for module in modules %}
+                        <div class="col-12 col-sm-6 col-md-4 mb-3">
+                            {{ module }}
+                        </div>
+                    {% endfor %}
+                    {% if not modules %}
+                        {% if selected_project %}
+                            <div>
+                                <h3>You don't have access to any features</h3>
+                                <p>This project doesn't currently have access to any of the wonderful features of our service.</p>
+                            </div>
+                        {% elif projects %}
+                            <div>
+                                <h3>Your project(s) are pending approval by their ARO</h3>
+                                <p>You can't access a project until we have received approval from the project's nominated ARO. The ARO specified in your project will be notified, and we will approve your project as soon as we receive confirmation from them.</p>
+                            </div>
+                        {% else %}
+                            <div>
+                                <h3>You don't have a project yet</h3>
+                                <p>Please click the "Add New Project" button above to create a project. Once you have a project you can start adding features to it in the "Discover" tab.</p>
+                            </div>
+                        {% endif %}
+                    {% endif %}
                 </div>
-              {% elif projects %}
-                <div>
-                  <h3>Your project(s) are pending approval by their ARO</h3>
-                  <p>You can't access a project until we have received approval from the project's nominated ARO. The ARO specified in your project will be notified, and we will approve your project as soon as we receive confirmation from them.</p>
-                </div>
-              {% else %}
-                <div>
-                  <h3>You don't have a project yet</h3>
-                  <p>Please click the "Add New Project" button above to create a project. Once you have a project you can start adding features to it in the "Discover" tab.</p>
-                </div>
-              {% endif %}
-            {% endif %}
-          </div>
-        </div>
-      </section>
+            </div>
+        </section>
     {% else %}
-      <div class="container">
-        <div class="text-center my-5">
-          <h2 class="mb-4">Create a workspace to get started...</h2>
-          <a class="btn btn-primary btn-lg" href="{% url 'new_project' %}" role="button" title="Create Project">
-            <span class="btn-label"><i class="fas fa-plus"></i></span> Create Workspace
-          </a>
+        <div class="container">
+            <div class="text-center my-5">
+                <h2 class="mb-4">Create a workspace to get started...</h2>
+                <a class="btn btn-primary btn-lg" href="{% url 'new_project' %}" role="button" title="Create Project">
+                    <span class="btn-label"><i class="fas fa-plus"></i></span> Create Workspace
+                </a>
+            </div>
         </div>
-      </div>
     {% endif %}
-  {% endif %}
+{% endif %}
 {% endblock content %}
 {% block script %}
-    <script>
-    {% for script in scripts %}
-        {{ script }}
-    {% endfor %}
-    </script>
+<script>
+{% for script in scripts %}
+    {{ script }}
+{% endfor %}
+</script>
 {% endblock script %}
