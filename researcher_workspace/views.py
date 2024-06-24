@@ -76,7 +76,7 @@ def desktop_details(request, desktop_name):
         'applicable_zones': [],  # Adjust this logic based on your actual requirement
     })
 
-@login_required(login_url='login')
+
 def home(request):
     projects = Project.objects.all()
     selected_project = projects.first() if projects.exists() else None
