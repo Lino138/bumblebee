@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import logging
 import os
+import sys
 
 from distutils.util import strtobool
 
@@ -19,6 +20,8 @@ from django.contrib.messages import constants as messages
 from django.urls import reverse_lazy
 
 from researcher_workspace.utils import secret_key
+
+
 
 # Stuff can happen from this point that is useful for deployer, need to get a
 # logger now
@@ -129,16 +132,28 @@ X_FRAME_OPTIONS = 'DENY'
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-DATABASES = {
+if 'makemigrations' in sys.argv:
+    DATABASES = {
     'default': {
-        'ENGINE': get_setting('DB_ENGINE', 'django.db.backends.mysql'),
-        'NAME': get_setting('DB_NAME', 'bumblebee'),
-        'USER': get_setting('DB_USER'),
-        'PASSWORD': get_setting('DB_PASSWORD'),
-        'HOST': get_setting('DB_HOST'),
-        'PORT': get_setting('DB_PORT', '3306'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'testdb',
+        'USER': 'root',
+        'PASSWORD': 'yourpassword',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
-}
+} 
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': get_setting('DB_ENGINE', 'django.db.backends.mysql', required=True),
+            'NAME': get_setting('DB_NAME', 'bumblebee', required=True),
+            'USER': get_setting('DB_USER', required=True),
+            'PASSWORD': get_setting('DB_PASSWORD', required=True),
+            'HOST': get_setting('DB_HOST', 'localhost', required=True),
+            'PORT': get_setting('DB_PORT', '3306', required=True),
+        }
+    }
 
 # Redis queue
 REDIS_HOST = get_setting('REDIS_HOST', 'localhost')
