@@ -1,3 +1,4 @@
+<!-- researcher_workspace/templates/vm_manager/html/No_VM.html -->
 <div class="card h-100 shadow">
   <div class="card-body h-100 d-flex flex-column">
     <div class="feature text-center">
@@ -11,7 +12,7 @@
         <h6>FEATURES</h6>
         <p>
         {% for app in desktop_type.details.features.apps %}
-          {{ desktop_type.details.features.apps }}&nbsp;
+          {{ app }}&nbsp;
         {% endfor %}
         </p>
       {% endif %}

@@ -67,6 +67,15 @@ def _get_users_for_report():
         num += 1
     return users
 
+def desktop_details(request, desktop_name):
+    desktop_type = get_object_or_404(VM, id=desktop_name)
+    return render(request, 'researcher_workspace/desktop_details.html', {
+        'desktop_type': desktop_type,
+        'launch_allowed': True,  # Adjust this logic based on your actual requirement
+        'app_name': 'researcher_workspace',
+        'applicable_zones': [],  # Adjust this logic based on your actual requirement
+    })
+
 @login_required(login_url='login')
 def home(request):
     projects = Project.objects.filter(project_admin=request.user)
