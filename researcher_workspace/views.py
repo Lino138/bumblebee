@@ -43,6 +43,8 @@ from vm_manager.constants import NO_VM
 from vm_manager.utils.utils import get_nectar
 from vm_manager.views import desktop_limit_check
 
+from .models import VM
+
 logger = logging.getLogger(__name__)
 
 
@@ -65,6 +67,29 @@ def _get_users_for_report():
         num += 1
     return users
 
+@login_required(login_url='login')
+def home(request):
+    projects = Project.objects.filter(user=request.user)  # Assuming you have a Project model linked to the user
+    selected_project = projects.first() if projects else None
+    vms = VM.objects.all()
+    
+    if request.method == 'POST':
+        selected_vm_pk = request.POST.get('vm_chooser')
+        selected_vm = VM.objects.get(pk=selected_vm_pk)
+        return render(request, 'home/home.html', {
+            'vms': vms,
+            'selected_vm': selected_vm,
+            'projects': projects,
+            'selected_project': selected_project,
+            'modules': selected_project.modules.all() if selected_project else [],
+        })
+    else:
+        return render(request, 'home/home.html', {
+            'vms': vms,
+            'projects': projects,
+            'selected_project': selected_project,
+            'modules': selected_project.modules.all() if selected_project else [],
+        })
 
 @login_required(login_url='login')
 def user_search(request):

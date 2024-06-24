@@ -26,6 +26,18 @@ class FeatureOptions(models.Model):
     def __str__(self):
         return self.name
 
+class VM(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    logo = models.URLField()
+    image_name = models.CharField(max_length=255)
+    default_flavor_name = models.CharField(max_length=50)
+    big_flavor_name = models.CharField(max_length=50)
+    volume_size = models.IntegerField()
+    feature = models.IntegerField()
+
+    def __str__(self):
+        return self.name
 
 class FeatureManager(models.Manager):
     # feature_name is untrusted because it comes from the user, so should be handled with care

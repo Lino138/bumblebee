@@ -64,6 +64,12 @@ else:
         path('logout/', views.logout, name='logout'),
         path('rcsadmin/', admin.site.urls),
     ]
+    
+
+urlpatterns = [
+    path('home/', views.home, name='home'),
+    path('select_vm/', views.home, name='select_vm'),  # This handles the form submission
+]
 
 handler404 = views.custom_page_not_found
 handler500 = views.custom_page_error
