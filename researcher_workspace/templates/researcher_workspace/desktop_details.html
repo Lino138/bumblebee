@@ -1,171 +1,82 @@
 {% extends 'common/base.html' %}
+{% load static %}
+{% load datetime %}
 
 {% block content %}
-  <header class="desktop-header bg-white shadow-sm">
-    <div class="container pt-5 pb-3 position-relative">
-      <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-link position-absolute top-0 mt-2"><i class="fas fa-arrow-left"></i> Back</a>
-      <div class="d-flex">
-        <div class="desktop-logo flex-grow-1">
-          <img src="{{ desktop_type.logo }}" width="360" />
-        </div>
-        <div class="desktop-header-button d-none d-sm-inline-block align-self-center">
-          {% if launch_allowed %}
-            <button class="btn btn-success" title="Launch {{ desktop_type.name }}" data-bs-toggle="modal" data-bs-target="#{{ app_name }}-{{ desktop_type.id }}-launch-modal">Create Desktop <i class="fas fa-plus"></i>
-          {% else %}
-            <span class="d-inline-block disabled" tabindex="0" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="You already have a Virtual Desktop.">
-              <button class="btn btn-success" disabled title="Launch {{ desktop_type.name }}">Create Desktop <i class="fas fa-plus"></i>
-            </span>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </header>
-  <section class="desktop-details">
-      <div class="container py-5">
-        <div class="row mb-5">
-          <div class="col-12 col-md-6 col-lg-7 col-xxl-8">
-            {% if desktop_type.details.screenshots %}
-            <div id="screenshot-carousel" class="carousel slide shadow mb-3" data-bs-ride="carousel">
-              <div class="carousel-indicators">
-                {% for screenshot in desktop_type.details.screenshots %}
-                <button type="button" data-bs-target="#screenshot-carousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="{{ screenshot.description }}"></button>
-                {% endfor %}
-              </div>
-              <div class="carousel-inner">
-                {% for screenshot in desktop_type.details.screenshots %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                  <img src="{{ screenshot.url }}" class="d-block w-100" alt="{{ screenshot.description }}">
+{% if user.is_authenticated %}
+    {% if projects %}
+        <section class="desktop-section bg-secondary hex-bg">
+            <div class="desktop-container container">
+                <div class="row py-5">
+                    <!-- Workspace Information -->
+                    <div class="workspace-info col-md-12 col-lg-4">
+                        <h6 class="text-white mb-3">
+                            WORKSPACE
+                            <a href="{% url 'project_edit' project_id=selected_project.id %}" class="btn btn-xs btn-link">
+                                <i class="fas fa-pen"></i> Edit
+                            </a>
+                        </h6>
+                        <h1 class="workspace-title h2 text-white mb-3">{{ selected_project.title }}</h1>
+                        <p class="workspace-description text-white mb-3">{{ selected_project.description }}</p>
+                    </div>
+                    <!-- Greeting and VM Selection -->
+                    <div class="desktop-info col-md-12 col-lg-8">
+                        <p class="lead text-center text-white">Good {% time_of_day %} {{ user.first_name }}!</p>
+                        <div id="vm-selector" class="vm-selector">
+                            <!-- VM List -->
+                            <div class="list-group">
+                                {% for vm in vms %}
+                                    <button type="button" class="list-group-item list-group-item-action vm-item" data-vm-id="{{ vm.pk }}" data-vm-name="{{ vm.name }}" data-vm-description="{{ vm.description }}" data-vm-logo="{{ vm.logo }}">
+                                        <img src="{{ vm.logo }}" alt="{{ vm.name }}" class="vm-logo"> {{ vm.name }}
+                                    </button>
+                                {% endfor %}
+                            </div>
+                            <!-- VM Details Section -->
+                            <div class="vm-details mt-4">
+                                <form method="post" action="{% url 'select_vm' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" id="vm_chooser" name="vm_chooser">
+                                    <h3 id="vm-name"></h3>
+                                    <p id="vm-description"></p>
+                                    <img id="vm-logo" src="" alt="VM Logo" style="max-width: 100px;">
+                                    <button type="submit" class="btn btn-primary mt-3">Select VM</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                {% endfor %}
-              </div>
-              <button class="carousel-control-prev" type="button" data-bs-target="#screenshot-carousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-              </button>
-              <button class="carousel-control-next" type="button" data-bs-target="#screenshot-carousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-              </button>
             </div>
-            {% endif %}
-            {{ desktop_type.description | safe }}
-          </div>
-          <div class="col-12 col-md-6 col-lg-5 col-xxl-4">
-            <h6>DEFAULT SIZE</h6>
-            <ul>
-              <li>{{ desktop_type.default_flavor.vcpus }} VCPUs</li>
-              <li>{{ desktop_type.default_flavor.ram }} GB RAM</li>
-	    </ul>
-            <h6>BOOST SIZE</h6>
-            <ul>
-              <li>{{ desktop_type.big_flavor.vcpus }} VCPUs</li>
-              <li>{{ desktop_type.big_flavor.ram }} GB RAM</li>
-	    </ul>
-            {% if desktop_type.details.features %}
-              <h6>FEATURES</h6>
-              <ul>
-              {% for feature in desktop_type.details.features %}
-                <li>{{ feature }}</li>
-              {% endfor %}
-              <ul>
-            {% endif %}
-          </div>
-        </div>     
-        <div class="row mb-5">
-          <div class="col-lg-12 col-xl-10 offset-xl-1">
-            <div class="card shadow">
-              <div class="card-body px-lg-5">
-                <h2 class="text-center mt-3 mb-5">This desktop is great for...</h2>
-                <ul class="fa-ul mb-4">
-                  {% for highlight in desktop_type.details.highlights %}
-                    <li class="h5">
-                      <span class="fa-li"><i class="fas fa-check-circle text-success"></i></span>
-                      <span class="text-secondary">{{ highlight }}</span>
-                    </li>
-                  {% endfor %}
-                </ul>
-              </div>
+        </section>
+    {% else %}
+        <div class="container">
+            <div class="text-center my-5">
+                <h2 class="mb-4">Create a workspace to get started...</h2>
+                <a class="btn btn-primary btn-lg" href="{% url 'new_project' %}" role="button" title="Create Project">
+                    <span class="btn-label"><i class="fas fa-plus"></i></span> Create Workspace
+                </a>
             </div>
-          </div>
         </div>
-        <div class="row mb-5">
-          <div class="col-12 text-center">
-            {% if launch_allowed %}
-            <h3 class="mb-4">Would you like to create this desktop?</h3>
-            <button class="btn btn-outline-success mb-4" title="Launch {{ desktop_type.name }}"
-                    data-bs-toggle="modal"
-                    data-bs-target="#{{ app_name }}-{{ desktop_type.id }}-launch-modal">
-              Create {{ desktop_type.name }} Desktop <i class="fas fa-plus"></i>
-            </button>
-            <h3>Or explore <a href="{% url 'index' %}#desktop-library">other desktops.</a></h3>
-            {% else %}
-            <!-- Sorry.  Only one desktop permitted at a time -->
-            {% endif %}
-          </div>
-        </div>
-      </div>
-  </section>
-  <!-- Modal for the launch button -->
-  <div class="modal fade" id="{{ app_name }}-{{ desktop_type.id }}-launch-modal" tabindex="-1" aria-labelledby="{{ app_name }}-{{ desktop_type.id }}-launch-modal-label" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="{{ app_name }}-{{ desktop_type.id }}-launch-modal-label">Create Desktop</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center">
-        {% if applicable_zones|length == 1 %}
-          {% with applicable_zones|first as zone %} 
-            <p id="{{ app_name }}-{{ desktop_type.id }}-{{ zone.name }}">
-               Your desktop will be launched in the {{ zone.name }} availability zone.
-            </p>
-          {% endwith %}
-        {% elif applicable_zones|length > 1 %}
-        <p class="py-3"><strong>Please select your preferred availability zone...</strong></p>
-          <select id="{{ app_name }}-{{ desktop_type.id }}-zone" class="form-select"  aria-label="Select prefered availability zone">
-            <option value="" selected>Default zone</option>
-            {% for zone in applicable_zones %}
-              <option value="{{ zone.name }}">{{ zone.name }}</option>
-            {% endfor %}
-          </select>
-        <p class="py-3">Select "Default zone" to let the system choose.</p>
-        <p class="h5 py-4">Are you ready to create a {{ desktop_type.name }} Desktop?</p>
-        {% else %}
-          <p id="{{ app_name }}-{{ desktop_type.id }}-no-zones">
-            No availability zones currently support this desktop type.
-          </p>
-        {% endif %}
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-success" onclick="launch_{{ app_name }}_{{ desktop_type.id }}(this)">Create</button>
-      </div>
-    </div>
-  </div>
-{% endblock %}
+    {% endif %}
+{% endif %}
+{% endblock content %}
+
 {% block script %}
-  <script>
-    var beenClicked = false;
-    function launch_{{ app_name }}_{{ desktop_type.id }}(tag) {
-        if (!beenClicked) {
-            beenClicked = true;
-            tag.disabled = true;
-            {% if applicable_zones|length > 1 %}
-            selection = document.getElementById("{{ app_name }}-{{ desktop_type.id }}-zone").value;
-            {% else %}
-            selection = "";
-            {% endif %}
-            if (selection == "") {
-                {% with "researcher_desktop:launch_vm_default" as url_path %}
-                window.location.href = '{% url url_path desktop=desktop_type.id %}';
-                {% endwith %}
-            } else {
-                {% with "researcher_desktop:launch_vm" as url_path %}
-                url = '{% url url_path desktop=desktop_type.id zone_name="fixme" %}';
-                window.location.href = url.replace("fixme", selection)
-                {% endwith %}
-            }
-        }
-    }
-  </script>
-{% endblock %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const vmItems = document.querySelectorAll('.vm-item');
+    const vmChooser = document.getElementById('vm_chooser');
+    const vmName = document.getElementById('vm-name');
+    const vmDescription = document.getElementById('vm-description');
+    const vmLogo = document.getElementById('vm-logo');
+
+    vmItems.forEach(item => {
+        item.addEventListener('click', function () {
+            vmChooser.value = this.getAttribute('data-vm-id');
+            vmName.textContent = this.getAttribute('data-vm-name');
+            vmDescription.textContent = this.getAttribute('data-vm-description');
+            vmLogo.src = this.getAttribute('data-vm-logo');
+        });
+    });
+});
+</script>
+{% endblock script %}

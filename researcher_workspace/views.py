@@ -78,7 +78,9 @@ def desktop_details(request, desktop_name):
 
 @login_required(login_url='login')
 def home(request):
-    projects = Project.objects.filter(project_admin=request.user)
+    # could filter for condition in request (Exam or something other)
+    # projects = Project.objects.filter(project_admin=request.user)
+    projects = Project.objects.all()
     selected_project = projects.first() if projects.exists() else None
     vms = VM.objects.all()
     selected_vm = None
