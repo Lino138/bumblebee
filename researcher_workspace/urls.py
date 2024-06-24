@@ -69,11 +69,16 @@ else:
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('researcher_workspace.urls')),
+    path('', views.index, name='index'),
     path('home/', views.home, name='home'),
-    path('select_vm/', views.home, name='select_vm'),  # Handle form submission
+    path('select_vm/', views.home, name='select_vm'),
     path('desktop/<str:desktop_name>/', views.desktop_details, name='desktop_details'),
+    path('about/', views.about, name='about'),
+    path('help/', views.help, name='help'),
+    path('terms/', views.terms, name='terms'),
+    path('projects/', views.project_list, name='projects'),
+    path('profile/', views.profile, name='profile'),
+    path('new_project/', views.new_project, name='new_project'),
 ]
 
 handler404 = views.custom_page_not_found
