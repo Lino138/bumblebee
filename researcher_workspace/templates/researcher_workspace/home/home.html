@@ -1,6 +1,6 @@
 <!-- VM Details Section -->
 <div class="vm-details mt-4">
-  <form method="post" action="{% url 'select_vm' %}">
+  <form method="post" action="{% url 'home' %}">
       {% csrf_token %}
       <input type="hidden" id="vm_chooser" name="vm_chooser">
       {% if selected_vm %}
@@ -57,7 +57,9 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-      <button type="button" class="btn btn-success" onclick="launchVm(this)">Create</button>
+      {% if selected_vm %}
+        <button type="button" class="btn btn-success" onclick="launchVm(this, '{{ selected_vm.id }}')">Create</button>
+      {% endif %}
     </div>
   </div>
 </div>
@@ -80,15 +82,15 @@
       });
   
       var beenClicked = false;
-      window.launchVm = function(tag) {
+      window.launchVm = function(tag, vmId) {
           if (!beenClicked) {
               beenClicked = true;
               tag.disabled = true;
               let selection = document.getElementById("zone-selector") ? document.getElementById("zone-selector").value : "";
               if (selection == "") {
-                  window.location.href = '{% url "researcher_desktop:launch_vm_default" desktop=selected_vm.id %}';
+                  window.location.href = '{% url "researcher_desktop:launch_vm_default" desktop="dummy" %}'.replace("dummy", vmId);
               } else {
-                  let url = '{% url "researcher_desktop:launch_vm" desktop=selected_vm.id zone_name="fixme" %}';
+                  let url = '{% url "researcher_desktop:launch_vm" desktop="dummy" zone_name="fixme" %}'.replace("dummy", vmId);
                   window.location.href = url.replace("fixme", selection);
               }
           }

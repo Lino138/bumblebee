@@ -101,6 +101,7 @@ def home(request):
         'modules': selected_project.permissions.all() if selected_project else [],
     })
 
+
 @login_required(login_url='login')
 def user_search(request):
     if not (request.user.is_staff or has_group(request.user, 'Support Staff')):
