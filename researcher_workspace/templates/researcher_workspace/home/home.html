@@ -1,92 +1,98 @@
-{% extends 'common/base.html' %}
-{% load static %}
-{% load datetime %}
+<!-- VM Details Section -->
+<div class="vm-details mt-4">
+  <form method="post" action="{% url 'select_vm' %}">
+      {% csrf_token %}
+      <input type="hidden" id="vm_chooser" name="vm_chooser">
+      {% if selected_vm %}
+          <h3 id="vm-name">{{ selected_vm.name }}</h3>
+          <p id="vm-description">{{ selected_vm.description }}</p>
+          <img id="vm-logo" src="{{ selected_vm.logo }}" alt="VM Logo" style="max-width: 100px;">
+      {% else %}
+          <h3 id="vm-name">No VM found</h3>
+          <p id="vm-description">No VM found</p>
+          <img id="vm-logo" src="" alt="VM Logo" style="max-width: 100px;">
+      {% endif %}
+      <button type="submit" class="btn btn-primary mt-3">Select VM</button>
+  </form>
+  
+  {% if selected_vm %}
+      <button class="btn btn-outline-success mt-3" title="Launch {{ selected_vm.name }}"
+              data-bs-toggle="modal"
+              data-bs-target="#launch-modal">
+        Create {{ selected_vm.name }} VM <i class="fas fa-plus"></i>
+      </button>
+  {% endif %}
+</div>
 
-{% block content %}
-{% if user.is_authenticated %}
-    {% if projects %}
-        <section class="desktop-section bg-secondary hex-bg">
-            <div class="desktop-container container">
-                <div class="row py-5">
-                    <!-- Workspace Information -->
-                    <div class="workspace-info col-md-12 col-lg-4">
-                        <h6 class="text-white mb-3">
-                            WORKSPACE
-                            <a href="{% url 'project_edit' project_id=selected_project.id %}" class="btn btn-xs btn-link">
-                                <i class="fas fa-pen"></i> Edit
-                            </a>
-                        </h6>
-                        <h1 class="workspace-title h2 text-white mb-3">{{ selected_project.title }}</h1>
-                        <p class="workspace-description text-white mb-3">{{ selected_project.description }}</p>
-                    </div>
-                    <!-- Greeting and VM Selection -->
-                    <div class="desktop-info col-md-12 col-lg-8">
-                        <p class="lead text-center text-white">Good {% time_of_day %} {{ user.first_name }}!</p>
-                        <div id="vm-selector" class="vm-selector">
-                            <!-- VM List -->
-                            <div class="list-group">
-                                {% if vms %}
-                                    {% for vm in vms %}
-                                        <button type="button" class="list-group-item list-group-item-action vm-item" data-vm-id="{{ vm.pk }}" data-vm-name="{{ vm.name }}" data-vm-description="{{ vm.description }}" data-vm-logo="{{ vm.logo }}">
-                                            <img src="{{ vm.logo }}" alt="{{ vm.name }}" class="vm-logo"> {{ vm.name }}
-                                        </button>
-                                    {% endfor %}
-                                {% else %}
-                                    <p>No VMs available</p>
-                                {% endif %}
-                            </div>
-                            <!-- VM Details Section -->
-                            <div class="vm-details mt-4">
-                                <form method="post" action="{% url 'select_vm' %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" id="vm_chooser" name="vm_chooser">
-                                    {% if selected_vm %}
-                                        <h3 id="vm-name">{{ selected_vm.name }}</h3>
-                                        <p id="vm-description">{{ selected_vm.description }}</p>
-                                        <img id="vm-logo" src="{{ selected_vm.logo }}" alt="VM Logo" style="max-width: 100px;">
-                                    {% else %}
-                                        <h3 id="vm-name">No VM found</h3>
-                                        <p id="vm-description">No VM found</p>
-                                        <img id="vm-logo" src="" alt="VM Logo" style="max-width: 100px;">
-                                    {% endif %}
-                                    <button type="submit" class="btn btn-primary mt-3">Select VM</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    {% else %}
-        <div class="container">
-            <div class="text-center my-5">
-                <h2 class="mb-4">Create a workspace to get started...</h2>
-                <a class="btn btn-primary btn-lg" href="{% url 'new_project' %}" role="button" title="Create Project">
-                    <span class="btn-label"><i class="fas fa-plus"></i></span> Create Workspace
-                </a>
-            </div>
-        </div>
-    {% endif %}
-{% endif %}
-{% endblock content %}
-
-{% block script %}
+<!-- Modal for the launch button -->
+<div class="modal fade" id="launch-modal" tabindex="-1" aria-labelledby="launch-modal-label" aria-hidden="true">
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="launch-modal-label">Create VM</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body text-center">
+      {% if applicable_zones|length == 1 %}
+        {% with applicable_zones|first as zone %}
+          <p id="selected-zone">
+             Your VM will be launched in the {{ zone.name }} availability zone.
+          </p>
+        {% endwith %}
+      {% elif applicable_zones|length > 1 %}
+        <p class="py-3"><strong>Please select your preferred availability zone...</strong></p>
+        <select id="zone-selector" class="form-select" aria-label="Select preferred availability zone">
+          <option value="" selected>Default zone</option>
+          {% for zone in applicable_zones %}
+            <option value="{{ zone.name }}">{{ zone.name }}</option>
+          {% endfor %}
+        </select>
+        <p class="py-3">Select "Default zone" to let the system choose.</p>
+        <p class="h5 py-4">Are you ready to create a {{ selected_vm.name }} VM?</p>
+      {% else %}
+        <p id="no-zones">
+          No availability zones currently support this VM type.
+        </p>
+      {% endif %}
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      <button type="button" class="btn btn-success" onclick="launchVm(this)">Create</button>
+    </div>
+  </div>
+</div>
+</div>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const vmItems = document.querySelectorAll('.vm-item');
-    const vmChooser = document.getElementById('vm_chooser');
-    const vmName = document.getElementById('vm-name');
-    const vmDescription = document.getElementById('vm-description');
-    const vmLogo = document.getElementById('vm-logo');
-
-    vmItems.forEach(item => {
-        item.addEventListener('click', function () {
-            vmChooser.value = this.getAttribute('data-vm-id');
-            vmName.textContent = this.getAttribute('data-vm-name');
-            vmDescription.textContent = this.getAttribute('data-vm-description');
-            vmLogo.src = this.getAttribute('data-vm-logo');
-        });
-    });
-});
-</script>
-{% endblock script %}
+  document.addEventListener('DOMContentLoaded', function () {
+      const vmItems = document.querySelectorAll('.vm-item');
+      const vmChooser = document.getElementById('vm_chooser');
+      const vmName = document.getElementById('vm-name');
+      const vmDescription = document.getElementById('vm-description');
+      const vmLogo = document.getElementById('vm-logo');
+  
+      vmItems.forEach(item => {
+          item.addEventListener('click', function () {
+              vmChooser.value = this.getAttribute('data-vm-id');
+              vmName.textContent = this.getAttribute('data-vm-name');
+              vmDescription.textContent = this.getAttribute('data-vm-description');
+              vmLogo.src = this.getAttribute('data-vm-logo');
+          });
+      });
+  
+      var beenClicked = false;
+      window.launchVm = function(tag) {
+          if (!beenClicked) {
+              beenClicked = true;
+              tag.disabled = true;
+              let selection = document.getElementById("zone-selector") ? document.getElementById("zone-selector").value : "";
+              if (selection == "") {
+                  window.location.href = '{% url "researcher_desktop:launch_vm_default" desktop=selected_vm.id %}';
+              } else {
+                  let url = '{% url "researcher_desktop:launch_vm" desktop=selected_vm.id zone_name="fixme" %}';
+                  window.location.href = url.replace("fixme", selection);
+              }
+          }
+      }
+  });
+  </script>
+  
