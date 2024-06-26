@@ -3,25 +3,25 @@
 {% load datetime %}
 
 {% block content %}
-{% load mathfilters %}
-{% if user.is_authenticated %}
-  {% if projects %}
-    <section class="desktop-section bg-secondary hex-bg">
-      <div class="desktop-container container">
-        <div class="row py-5">
-          <div class="workspace-info col-md-12 col-lg-4">
-            <h6 class="text-white mb-3">
-              WORKSPACE
-              <a href="{% url 'project_edit' project_id=selected_project.id %}" class="btn btn-xs btn-link"><i class="fas fa-pen"></i> Edit</a>
-            </h6>
-            <h1 class="workspace-title h2 text-white mb-3">{{ selected_project.title }}</h1>
-            <p class="workspace-description text-white mb-3">{{ selected_project.description }}</p>
-          </div>
-          <div class="desktop-info col-md-12 col-lg-8">
-            <p class="lead text-center text-white">Good {% time_of_day %} {{ user.first_name }}!</p>
-            <div id="desktop-computer">
-              <img id="desktop-computer-frame" src="{% static 'img/desktop-computer.svg' %}">
-              <div id="desktop-computer-screen" class="bg-white d-flex align-items-center justify-content-center">
+  {% load mathfilters %}
+  {% if user.is_authenticated %}
+    {% if projects %}
+      <section class="desktop-section bg-secondary hex-bg">
+        <div class="desktop-container container">
+          <div class="row py-5">
+            <div class="workspace-info col-md-12 col-lg-4">
+              <h6 class="text-white mb-3">
+                WORKSPACE
+                <a href="{% url 'project_edit' project_id=selected_project.id %}" class="btn btn-xs btn-link"><i class="fas fa-pen"></i> Edit</a>
+              </h6>
+              <h1 class="workspace-title h2 text-white mb-3">{{ selected_project.title }}</h1>
+              <p class="workspace-description text-white mb-3">{{ selected_project.description }}</p>
+            </div>
+            <div class="desktop-info col-md-12 col-lg-8">
+              <p class="lead text-center text-white">Good {% time_of_day %} {{ user.first_name }}!</p>
+              <div id="desktop-computer">
+                <img id="desktop-computer-frame" src="{% static 'img/desktop-computer.svg' %}">
+                <div id="desktop-computer-screen" class="bg-white d-flex align-items-center justify-content-center">
                 {% if active_module %}
                   {{ active_module }}
                 {% else %}
@@ -30,45 +30,48 @@
                     <a href="#desktop-library" class="btn btn-primary btn-lg">Explore <i class="fas fa-arrow-down"></i></a>
                   </div>
                 {% endif %}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-    <section id="desktop-library" class="py-5">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-4">
+      </section>
+      <section id="desktop-library" class="py-5">
+        <div class="container">
+          <div class="row">
             <h1 class="mb-4">Desktop Library</h1>
-            <div id="vm-list">
-              {% for module in modules %}
-                <div class="vm-item mb-3" data-desktop-name="{{ module.desktop_type.id }}">
-                  {{ module }}
-                </div>
-              {% endfor %}
-            </div>
+            {% for module in modules %}
+              <div class="col-12 col-sm-6 col-md-4 mb-3 vm-item" data-desktop-name="{{ module.desktop_type.id }}">
+                {{ module }}
+              </div>
+            {% endfor %}
+            {% empty %}
+              <div>
+                <h3>You don't have access to any features</h3>
+                <p>
+                  This project doesn't currently have access to any of the wonderful features of our service.
+                </p>
+              </div>
+            {% endempty %}
           </div>
-          <div class="col-md-8">
-            <div id="desktop-details">
+          <div class="row">
+            <div class="col-12" id="desktop-details">
               <!-- Desktop details will be loaded here -->
             </div>
           </div>
         </div>
+      </section>
+    {% else %}
+      <div class="container">
+        <div class="text-center my-5">
+          <h2 class="mb-4">Create a workspace to get started...</h2>
+          <a class="btn btn-primary btn-lg" href="{% url 'new_project' %}" role="button" title="Create Project">
+            <span class="btn-label"><i class="fas fa-plus"></i></span> Create Workspace
+          </a>
+        </div>
       </div>
-    </section>
-  {% else %}
-    <div class="container">
-      <div class="text-center my-5">
-        <h2 class="mb-4">Create a workspace to get started...</h2>
-        <a class="btn btn-primary btn-lg" href="{% url 'new_project' %}" role="button" title="Create Project">
-          <span class="btn-label"><i class="fas fa-plus"></i></span> Create Workspace
-        </a>
-      </div>
-    </div>
+    {% endif %}
   {% endif %}
-{% endif %}
-
 {% endblock content %}
 {% block script %}
 <script>
@@ -78,23 +81,10 @@ document.addEventListener('DOMContentLoaded', function () {
     item.addEventListener('click', function () {
       const desktopName = this.dataset.desktopName;
       if (desktopName) {
-        fetch(`/desktop/${desktopName}`, {
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-          })
+        fetch(`/desktop/details/${desktopName}/`)
+          .then(response => response.text())
           .then(data => {
-            if (data.error) {
-              console.error('Error:', data.error);
-            } else {
-              document.getElementById('desktop-details').innerHTML = data.html;
-            }
+            document.getElementById('desktop-details').innerHTML = data;
           })
           .catch(error => console.error('Error fetching desktop details:', error));
       }

@@ -488,25 +488,21 @@ def custom_page_error(request, exception=None):
 
 
 @login_required(login_url='login')
-@user_passes_test(test_func=agreed_to_terms, login_url='terms', redirect_field_name=None)
+@user_passes_test(test_func=agreed_to_terms, login_url='terms',
+                  redirect_field_name=None)
 def desktop_details(request, desktop_name):
-    # Safely retrieve the desktop type object or return a 404 error if not found
-    desktop_type = get_object_or_404(DesktopType, id=desktop_name)
-
+    desktop_type = get_desktop_type(desktop_name)
     zones = get_applicable_zones(desktop_type)
     launch_blocked = desktop_limit_check(request.user, desktop_type)
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        try:
-            html = render_to_string('researcher_workspace/desktop_details_partial.html', {
-                'app_name': 'researcher_workspace',
-                'launch_allowed': not launch_blocked,
-                'desktop_type': desktop_type,
-                'applicable_zones': zones
-            }, request)
-            return JsonResponse({'html': html})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+        html = render_to_string('researcher_workspace/desktop_details.html', {
+            'app_name': 'researcher_workspace',
+            'launch_allowed': not launch_blocked,
+            'desktop_type': desktop_type,
+            'applicable_zones': zones
+        }, request)
+        return JsonResponse({'html': html})
 
     return render(request, 'researcher_workspace/desktop_details.html', {
         'app_name': 'researcher_workspace',
