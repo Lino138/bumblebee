@@ -24,6 +24,7 @@ from django.utils.timezone import utc
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.template.loader import render_to_string
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 
 from researcher_desktop.utils.utils import get_desktop_type, get_applicable_zones
 
@@ -489,21 +490,23 @@ def custom_page_error(request, exception=None):
 @login_required(login_url='login')
 @user_passes_test(test_func=agreed_to_terms, login_url='terms', redirect_field_name=None)
 def desktop_details(request, desktop_name):
-    desktop_type = get_desktop_type(desktop_name)
-    if not desktop_type:
-        return HttpResponseBadRequest("Invalid desktop name")
-    
+    # Safely retrieve the desktop type object or return a 404 error if not found
+    desktop_type = get_object_or_404(DesktopType, id=desktop_name)
+
     zones = get_applicable_zones(desktop_type)
     launch_blocked = desktop_limit_check(request.user, desktop_type)
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        html = render_to_string('researcher_workspace/desktop_details_partial.html', {
-            'app_name': 'researcher_workspace',
-            'launch_allowed': not launch_blocked,
-            'desktop_type': desktop_type,
-            'applicable_zones': zones
-        }, request)
-        return JsonResponse({'html': html})
+        try:
+            html = render_to_string('researcher_workspace/desktop_details_partial.html', {
+                'app_name': 'researcher_workspace',
+                'launch_allowed': not launch_blocked,
+                'desktop_type': desktop_type,
+                'applicable_zones': zones
+            }, request)
+            return JsonResponse({'html': html})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
     return render(request, 'researcher_workspace/desktop_details.html', {
         'app_name': 'researcher_workspace',
