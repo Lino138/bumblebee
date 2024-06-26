@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
     item.addEventListener('click', function () {
       const desktopName = this.dataset.desktopName;
       if (desktopName) {
-        fetch(`/desktop/details/${desktopName}/`, {
+        fetch(`/desktop/details/${desktopName}`, {
           headers: {
             'X-Requested-With': 'XMLHttpRequest'
           }
