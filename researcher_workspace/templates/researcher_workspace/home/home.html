@@ -1,9 +1,9 @@
 {% extends 'common/base.html' %}
 {% load static %}
 {% load datetime %}
+{% load mathfilters %}
 
 {% block content %}
-  {% load mathfilters %}
   {% if user.is_authenticated %}
     {% if projects %}
       <section class="desktop-section bg-secondary hex-bg">
@@ -22,57 +22,36 @@
               <div id="desktop-computer">
                 <img id="desktop-computer-frame" src="{% static 'img/desktop-computer.svg' %}">
                 <div id="desktop-computer-screen" class="bg-white d-flex align-items-center justify-content-center">
-                {% if active_module %}
-                  {{ active_module }}
-                {% else %}
-                  <div class="text-center">
-                    <h4 class="mb-3">You haven't created a Desktop! Explore the Desktop Library...</h4>
-                    <a href="#desktop-library" class="btn btn-primary btn-lg">Explore <i class="fas fa-arrow-down"></i></a>
+                  <div id="module-content">
+                    {% if active_module %}
+                      {{ active_module }}
+                    {% else %}
+                      <div class="text-center">
+                        <h4 class="mb-3">You haven't created a Desktop! Explore the Desktop Library...</h4>
+                        <a href="#desktop-library" class="btn btn-primary btn-lg">Explore <i class="fas fa-arrow-down"></i></a>
+                      </div>
+                    {% endif %}
                   </div>
-                {% endif %}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </section>
-      <section id="#desktop-library">
+      <section id="desktop-library">
         <div class="container py-5">
           <div class="row">
             <h1 class="mb-4">Desktop Library</h1>
-            {% for module in modules %}
-              <div class="col-12 col-sm-6 col-md-4 mb-3">
-                {{ module }}
-              </div>
-            {% endfor %}
-            {% for module in modules %}
-              {% empty %}
-              {% if selected_project %}
-                <div>
-                  <h3>You don't have access to any features</h3>
-                  <p>
-                    This project doesn't currently have access to any of the wonderful features of our service.
-                  </p>
-                </div>
-              {% elif projects %}
-                <div>
-                  <h3>Your project(s) are pending approval by their ARO</h3>
-                  <p>
-                    You can't access a project until we have received approval from the project's nominated ARO.
-                    The ARO specified in your project will be notified, and we will approve your project as
-                    soon as we receive confirmation from them.
-                  </p>
-                </div>
-              {% else %}
-              <div>
-                <h3>You don't have a project yet</h3>
-                <p>
-                  Please click the "Add New Project" button above to create a project. Once you have a project
-                  you can start adding features to it in the "Discover" tab.
-                </p>
-              </div>
-              {% endif %}
-            {% endfor %}
+            <div class="col-12 col-md-4">
+              <ul class="list-group" id="module-list">
+                {% for module in modules %}
+                  <li class="list-group-item" data-module="{{ module|escape }}">{{ module }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div class="col-12 col-md-8">
+              <div id="module-details"></div>
+            </div>
           </div>
         </div>
       </section>
@@ -87,12 +66,32 @@
       </div>
     {% endif %}
   {% endif %}
-
 {% endblock content %}
+
 {% block script %}
-    <script>
-    {% for script in scripts %}
-        {{ script }}
-    {% endfor %}
-    </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const moduleListItems = document.querySelectorAll('#module-list .list-group-item');
+      const moduleDetails = document.getElementById('module-details');
+      
+      moduleListItems.forEach(item => {
+        item.addEventListener('click', function() {
+          // Deselect all items
+          moduleListItems.forEach(i => i.classList.remove('active'));
+          // Select the clicked item
+          this.classList.add('active');
+          // Display the module content
+          moduleDetails.innerHTML = this.getAttribute('data-module');
+        });
+      });
+
+      // Deselect when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!moduleDetails.contains(e.target) && !document.getElementById('module-list').contains(e.target)) {
+          moduleListItems.forEach(i => i.classList.remove('active'));
+          moduleDetails.innerHTML = '';
+        }
+      });
+    });
+  </script>
 {% endblock script %}
