@@ -78,12 +78,17 @@ document.addEventListener('DOMContentLoaded', function () {
     item.addEventListener('click', function () {
       const desktopName = this.dataset.desktopName;
       if (desktopName) {
-        fetch(`/desktop/details/${desktopName}/`, {
+        fetch(`/desktop/${desktopName}`, {
           headers: {
             'X-Requested-With': 'XMLHttpRequest'
           }
         })
-          .then(response => response.json())
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
           .then(data => {
             document.getElementById('desktop-details').innerHTML = data.html;
           })
