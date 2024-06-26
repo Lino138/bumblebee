@@ -487,15 +487,17 @@ def custom_page_error(request, exception=None):
 
 
 @login_required(login_url='login')
-@user_passes_test(test_func=agreed_to_terms, login_url='terms',
-                  redirect_field_name=None)
+@user_passes_test(test_func=agreed_to_terms, login_url='terms', redirect_field_name=None)
 def desktop_details(request, desktop_name):
     desktop_type = get_desktop_type(desktop_name)
+    if not desktop_type:
+        return HttpResponseBadRequest("Invalid desktop name")
+    
     zones = get_applicable_zones(desktop_type)
     launch_blocked = desktop_limit_check(request.user, desktop_type)
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        html = render_to_string('researcher_workspace/desktop_details.html', {
+        html = render_to_string('researcher_workspace/desktop_details_partial.html', {
             'app_name': 'researcher_workspace',
             'launch_allowed': not launch_blocked,
             'desktop_type': desktop_type,
@@ -509,7 +511,6 @@ def desktop_details(request, desktop_name):
         'desktop_type': desktop_type,
         'applicable_zones': zones
     })
-
 
 @login_required(login_url='login')
 @user_passes_test(test_func=agreed_to_terms, login_url='terms',
