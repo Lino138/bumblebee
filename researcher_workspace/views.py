@@ -22,6 +22,8 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.timezone import utc
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.template.loader import render_to_string
+from django.http import JsonResponse
 
 from researcher_desktop.utils.utils import get_desktop_type, get_applicable_zones
 
