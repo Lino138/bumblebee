@@ -82,6 +82,7 @@ def home(request):
     selected_project = projects.first() if projects.exists() else None
     vms = VM.objects.all()
     selected_vm = None
+    applicable_zones = []  # Replace with actual logic to fetch applicable zones
 
     # Debug statements to print the fetched data to the console
     print("Projects:", projects)
@@ -90,8 +91,12 @@ def home(request):
 
     if request.method == 'POST':
         selected_vm_pk = request.POST.get('vm_chooser')
-        selected_vm = VM.objects.get(pk=selected_vm_pk)
-        print("Selected VM:", selected_vm)
+        if selected_vm_pk:
+            selected_vm = VM.objects.get(pk=selected_vm_pk)
+            print("Selected VM:", selected_vm)
+
+    print("Applicable Zones:", applicable_zones)
+    print("Selected VM:", selected_vm)
 
     return render(request, 'researcher_workspace/home/home.html', {
         'vms': vms,
@@ -99,7 +104,9 @@ def home(request):
         'projects': projects,
         'selected_project': selected_project,
         'modules': selected_project.permissions.all() if selected_project else [],
+        'applicable_zones': applicable_zones,
     })
+
 
 
 @login_required(login_url='login')
