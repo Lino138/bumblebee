@@ -1,28 +1,38 @@
 {% extends 'common/base.html' %}
 {% load static %}
 {% load datetime %}
-{% load mathfilters %}
 
 {% block content %}
-  {% if user.is_authenticated %}
-    {% if projects %}
-      <section class="desktop-section bg-secondary hex-bg">
-        <div class="desktop-container container">
-          <div class="row py-5">
-            <div class="workspace-info col-md-12 col-lg-4">
-              <h6 class="text-white mb-3">
-                WORKSPACE
-                <a href="{% url 'project_edit' project_id=selected_project.id %}" class="btn btn-xs btn-link"><i class="fas fa-pen"></i> Edit</a>
-              </h6>
-              <h1 class="workspace-title h2 text-white mb-3">{{ selected_project.title }}</h1>
-              <p class="workspace-description text-white mb-3">{{ selected_project.description }}</p>
-            </div>
-            <div class="desktop-info col-md-12 col-lg-8">
-              <p class="lead text-center text-white">Good {% time_of_day %} {{ user.first_name }}!</p>
-              <div id="desktop-computer">
-                <img id="desktop-computer-frame" src="{% static 'img/desktop-computer.svg' %}">
-                <div id="desktop-computer-screen" class="bg-white d-flex align-items-center justify-content-center">
-                  <div id="module-content">
+{% load mathfilters %}
+{% if user.is_authenticated %}
+  {% if projects %}
+    <section class="desktop-section bg-secondary hex-bg">
+      <div class="desktop-container container">
+        <div class="row py-5">
+          <div class="workspace-info col-md-12 col-lg-4">
+            <h6 class="text-white mb-3">
+              WORKSPACE
+              <a href="{% url 'project_edit' project_id=selected_project.id %}" class="btn btn-xs btn-link"><i class="fas fa-pen"></i> Edit</a>
+            </h6>
+            <h1 class="workspace-title h2 text-white mb-3">{{ selected_project.title }}</h1>
+            <p class="workspace-description text-white mb-3">{{ selected_project.description }}</p>
+          </div>
+          <div class="desktop-info col-md-12 col-lg-8">
+            <p class="lead text-center text-white">Good {% time_of_day %} {{ user.first_name }}!</p>
+            <div class="row">
+              <div class="col-md-4">
+                <div id="vm-list">
+                  {% for module in modules %}
+                    <div class="vm-item">
+                      {{ module }}
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="col-md-8">
+                <div id="desktop-computer">
+                  <img id="desktop-computer-frame" src="{% static 'img/desktop-computer.svg' %}">
+                  <div id="desktop-computer-screen" class="bg-white d-flex align-items-center justify-content-center">
                     {% if active_module %}
                       {{ active_module }}
                     {% else %}
@@ -33,68 +43,61 @@
                     {% endif %}
                   </div>
                 </div>
+                <div id="desktop-details"></div>
               </div>
             </div>
           </div>
         </div>
-      </section>
-      <section id="desktop-library">
-        <div class="container py-5">
-          <div class="row">
-            <h1 class="mb-4">Desktop Library</h1>
-            <div class="col-12 col-md-4">
-              <ul class="list-group" id="module-list">
-                {% for module in modules %}
-                  <li class="list-group-item d-flex align-items-center" data-module="{{ module|escape }}">
-                    <img src="{{ module.logo }}" alt="{{ module.name }}" class="img-fluid mr-3" style="width: 50px;">
-                    <span>{{ module.name }}</span>
-                  </li>
-                {% endfor %}
-              </ul>
+      </div>
+    </section>
+    <section id="desktop-library">
+      <div class="container py-5">
+        <div class="row">
+          <h1 class="mb-4">Desktop Library</h1>
+          {% for module in modules %}
+            <div class="col-12 col-sm-6 col-md-4 mb-3">
+              {{ module }}
             </div>
-            <div class="col-12 col-md-8">
-              <div id="module-details"></div>
+          {% endfor %}
+          {% empty %}
+            <div>
+              <h3>You don't have access to any features</h3>
+              <p>
+                This project doesn't currently have access to any of the wonderful features of our service.
+              </p>
             </div>
-          </div>
-        </div>
-      </section>
-    {% else %}
-      <div class="container">
-        <div class="text-center my-5">
-          <h2 class="mb-4">Create a workspace to get started...</h2>
-          <a class="btn btn-primary btn-lg" href="{% url 'new_project' %}" role="button" title="Create Project">
-            <span class="btn-label"><i class="fas fa-plus"></i></span> Create Workspace
-          </a>
+          {% endempty %}
         </div>
       </div>
-    {% endif %}
+    </section>
+  {% else %}
+    <div class="container">
+      <div class="text-center my-5">
+        <h2 class="mb-4">Create a workspace to get started...</h2>
+        <a class="btn btn-primary btn-lg" href="{% url 'new_project' %}" role="button" title="Create Project">
+          <span class="btn-label"><i class="fas fa-plus"></i></span> Create Workspace
+        </a>
+      </div>
+    </div>
   {% endif %}
+{% endif %}
+
 {% endblock content %}
-
 {% block script %}
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const moduleListItems = document.querySelectorAll('#module-list .list-group-item');
-      const moduleDetails = document.getElementById('module-details');
-      
-      moduleListItems.forEach(item => {
-        item.addEventListener('click', function() {
-          // Deselect all items
-          moduleListItems.forEach(i => i.classList.remove('active'));
-          // Select the clicked item
-          this.classList.add('active');
-          // Display the module content
-          moduleDetails.innerHTML = this.getAttribute('data-module');
-        });
-      });
-
-      // Deselect when clicking outside
-      document.addEventListener('click', function(e) {
-        if (!moduleDetails.contains(e.target) && !document.getElementById('module-list').contains(e.target)) {
-          moduleListItems.forEach(i => i.classList.remove('active'));
-          moduleDetails.innerHTML = '';
-        }
-      });
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const vmItems = document.querySelectorAll('.vm-item');
+  vmItems.forEach(item => {
+    item.addEventListener('click', function () {
+      const desktopName = this.dataset.desktopName;
+      fetch(`/desktop/details/${desktopName}/`)
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('desktop-details').innerHTML = data;
+        })
+        .catch(error => console.error('Error fetching desktop details:', error));
     });
-  </script>
+  });
+});
+</script>
 {% endblock script %}

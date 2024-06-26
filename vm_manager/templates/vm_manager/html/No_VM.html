@@ -1,4 +1,4 @@
-<div class="card h-100 shadow">
+<div class="card h-100 shadow vm-item" data-desktop-name="{{ desktop_type.id }}">
   <div class="card-body h-100 d-flex flex-column">
     <div class="feature text-center">
       <div class="feature-icon">
@@ -19,6 +19,3 @@
     <a href="{% url 'desktop_details' desktop_name=desktop_type.id %}" class="btn btn-link stretched-link mt-auto">View Details <i class="fas fa-arrow-right"></i></a>
   </div>
 </div>
-
-{% block modals %}
-{% endblock modals %}

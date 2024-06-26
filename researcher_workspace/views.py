@@ -491,11 +491,22 @@ def desktop_details(request, desktop_name):
     desktop_type = get_desktop_type(desktop_name)
     zones = get_applicable_zones(desktop_type)
     launch_blocked = desktop_limit_check(request.user, desktop_type)
-    return render(request, 'researcher_workspace/desktop_details.html',
-                  {'app_name': 'researcher_workspace',
-                   'launch_allowed': not launch_blocked,
-                   'desktop_type': desktop_type,
-                   'applicable_zones': zones})
+
+    if request.is_ajax():
+        html = render_to_string('researcher_workspace/desktop_details.html', {
+            'app_name': 'researcher_workspace',
+            'launch_allowed': not launch_blocked,
+            'desktop_type': desktop_type,
+            'applicable_zones': zones
+        })
+        return JsonResponse({'html': html})
+
+    return render(request, 'researcher_workspace/desktop_details.html', {
+        'app_name': 'researcher_workspace',
+        'launch_allowed': not launch_blocked,
+        'desktop_type': desktop_type,
+        'applicable_zones': zones
+    })
 
 
 @login_required(login_url='login')
