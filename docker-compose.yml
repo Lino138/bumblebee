@@ -295,6 +295,30 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "true"]  # TODO
 
+ user_service:
+    build:
+      context: ./user_service
+    image: user_service
+    environment:
+      FLASK_ENV: development
+    ports:
+      - "5000:5000"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.user_service.entrypoints=user_service-secure"
+      - "traefik.http.routers.user_service.rule=Host(`user_service`)"
+      - "traefik.http.routers.user_service.tls=true"
+      - "traefik.http.routers.user_service.tls.certresolver=letsencrypt"
+      - "traefik.http.services.user_service.loadbalancer.server.port=5000"
+      - "traefik.http.middlewares.user_service-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.user_service-https.redirectscheme.port=443"
+      - "traefik.http.routers.user_service.middlewares=user_service-https"
+
 
 volumes:
   mariadb_data:
