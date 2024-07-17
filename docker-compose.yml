@@ -177,7 +177,6 @@ services:
       reverse-proxy:
         condition: service_healthy
 
-
   keycloak:
     image: quay.io/keycloak/keycloak:24.0
     environment:
@@ -295,7 +294,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "true"]  # TODO
 
- user_service:
+  user_service:
     build:
       context: ./user_service
     image: user_service
