@@ -13,9 +13,9 @@ services:
       DB_PASSWORD: toor
       REDIS_HOST: redis
     env_file:
-    - .env
+      - .env
     volumes:
-    - .:/app
+      - .:/app
     restart: unless-stopped
     command: django-admin runserver 0.0.0.0:8080
     depends_on:
@@ -30,39 +30,30 @@ services:
       reverse-proxy:
         condition: service_healthy
     labels:
-      #  Enable traefik to expose the provider
       - "traefik.enable=true"
-      # Use router 'bumblebee' points to 'bumblebee-secure'
       - "traefik.http.routers.bumblebee.entrypoints=bumblebee-secure"
-      # Domain to listen to
       - "traefik.http.routers.bumblebee.rule=Host(`bumblebee`)"
-      # Use resolver 'letsencrypt' https
       - "traefik.http.routers.bumblebee.tls=true"
       - "traefik.http.routers.bumblebee.tls.certresolver=letsencrypt"
-      # Register port for service 'bumblebee'
       - "traefik.http.services.bumblebee.loadbalancer.server.port=8080"
-
-      # Use middleware 'bumblebee-https'
-      # Redirect to https via 'bumblebee-https'
       - "traefik.http.middlewares.bumblebee-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.bumblebee-https.redirectscheme.port=443"
       - "traefik.http.routers.bumblebee.middlewares=bumblebee-https"
     links:
-    - mariadb:mariadb
-    - redis:redis
-    - keycloak:keycloak
-
+      - mariadb:mariadb
+      - redis:redis
+      - keycloak:keycloak
 
   init:
     build: .
     links:
-    - mariadb:mariadb
-    - redis:redis
+      - mariadb:mariadb
+      - redis:redis
     environment:
       <<: *bb_env
       DJANGO_MIGRATE: "True"
     volumes:
-    - .:/app
+      - .:/app
     depends_on:
       mariadb:
         condition: service_healthy
@@ -73,7 +64,7 @@ services:
     build: .
     environment: *bb_env
     env_file:
-    - .env
+      - .env
     restart: on-failure
     command: django-admin rqscheduler -i5
     depends_on:
@@ -84,19 +75,19 @@ services:
       redis:
         condition: service_healthy
     links:
-    - mariadb:mariadb
-    - redis:redis
+      - mariadb:mariadb
+      - redis:redis
     volumes:
-    - .:/app
+      - .:/app
 
   rqworker:
     build: .
     links:
-    - mariadb:mariadb
-    - redis:redis
+      - mariadb:mariadb
+      - redis:redis
     environment: *bb_env
     env_file:
-    - .env
+      - .env
     restart: on-failure
     command: django-admin rqworker
     depends_on:
@@ -107,26 +98,26 @@ services:
       redis:
         condition: service_healthy
     volumes:
-    - .:/app
+      - .:/app
 
   mariadb:
     image: mariadb:11.3.2
     environment:
       MARIADB_ROOT_PASSWORD: toor
     ports:
-    - 3306:3306
+      - 3306:3306
     volumes:
-    - /docker-data/mariadb_data:/var/lib/mysql
-    - ./docker-init/mariadb:/docker-entrypoint-initdb.d
+      - /docker-data/mariadb_data:/var/lib/mysql
+      - ./docker-init/mariadb:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD", "mariadb-admin", "-uroot", "-ptoor", "ping", "--silent"]
 
   redis:
     image: redis:alpine
     ports:
-    - 6379:6379
+      - 6379:6379
     volumes:
-    - /docker-data/redis_data:/data
+      - /docker-data/redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
 
@@ -134,36 +125,26 @@ services:
     image: guacamole/guacd:1.5.0
     restart: unless-stopped
     ports:
-    - 4822:4822
+      - 4822:4822
 
   guacamole:
     image: guacamole/guacamole:1.5.0
     restart: unless-stopped
     environment:
       GUACD_HOSTNAME: guacd
-      # GUACD_PORT: 8080
-      # Guacamole has to share the database with Bumblebee.
       MYSQL_HOSTNAME: mariadb
       MYSQL_DATABASE: bumblebee
       MYSQL_USER: root
       MYSQL_PASSWORD: toor
     env_file:
-    - .env
+      - .env
     labels:
-      #  Enable traefik to expose the provider
       - "traefik.enable=true"
-      # Use router 'guacamole' points to 'guacamole-secure'
       - "traefik.http.routers.guacamole.entrypoints=guacamole-secure"
-      # Domain to listen to
       - "traefik.http.routers.guacamole.rule=Host(`guacamole`)"
-      # Use resolver 'letsencrypt' https
       - "traefik.http.routers.guacamole.tls=true"
       - "traefik.http.routers.guacamole.tls.certresolver=letsencrypt"
-      # Register port for service 'guacamole'
       - "traefik.http.services.guacamole.loadbalancer.server.port=8080"
-
-      # Use middleware 'guacamole-https'
-      # Redirect to https via 'guacamole-https'
       - "traefik.http.middlewares.guacamole-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.guacamole-https.redirectscheme.port=9000"
       - "traefik.http.routers.guacamole.middlewares=guacamole-https"
@@ -186,29 +167,20 @@ services:
       KC_DB_PASSWORD: keycloak
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      # KC_HOSTNAME_STRICT_HTTPS: 'false'
       KC_HTTP_PORT: 8080
       KC_PROXY: edge
     labels:
-      #  Enable traefik to expose the provider
       - "traefik.enable=true"
-      # Use router 'keycloak' points to 'keycloak-secure'
       - "traefik.http.routers.keycloak.entrypoints=keycloak-secure"
-      # Domain to listen to
       - "traefik.http.routers.keycloak.rule=Host(`keycloak`)"
-      # Use resolver 'letsencrypt' https
       - "traefik.http.routers.keycloak.tls=true"
       - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
-      # Register port for service 'keycloak'
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
-
-      # Use middleware 'keycloak-https'
-      # Redirect to https via 'keycloak-https'
       - "traefik.http.middlewares.keycloak-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.keycloak-https.redirectscheme.port=8443"
       - "traefik.http.routers.keycloak.middlewares=keycloak-https"
     volumes:
-    - ./docker-init/keycloak:/opt/keycloak/data/import
+      - ./docker-init/keycloak:/opt/keycloak/data/import
     depends_on:
       mariadb:
         condition: service_healthy
@@ -227,20 +199,12 @@ services:
       PMA_ARBITRARY: 1
       APACHE_PORT: 8080
     labels:
-      #  Enable traefik to expose the provider
       - "traefik.enable=true"
-      # Use router 'phpmyadmin' points to 'phpmyadmin-secure'
       - "traefik.http.routers.phpmyadmin.entrypoints=phpmyadmin-secure"
-      # Domain to listen to
       - "traefik.http.routers.phpmyadmin.rule=Host(`phpmyadmin`)"
-      # Use resolver 'letsencrypt' https
       - "traefik.http.routers.phpmyadmin.tls=true"
       - "traefik.http.routers.phpmyadmin.tls.certresolver=letsencrypt"
-      # Register port for service 'phpmyadmin'
       - "traefik.http.services.phpmyadmin.loadbalancer.server.port=8080"
-
-      # Use middleware 'phpmyadmin-https'
-      # Redirect to https via 'phpmyadmin-https'
       - "traefik.http.middlewares.phpmyadmin-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.phpmyadmin-https.redirectscheme.port=8306"
       - "traefik.http.routers.phpmyadmin.middlewares=phpmyadmin-https"
@@ -254,51 +218,34 @@ services:
     image: traefik:v2.11
     command:
       - --providers.docker
-      # Set dashboard
       - --api.insecure=false
-      # Only enabled containers should be exposed
       - --providers.docker.exposedByDefault=false
-
-      # Use resolver 'letsencrypt'
-      # Enable ACME with automatic SSL.
       - --certificatesresolvers.letsencrypt.acme.email=foo@foo.com
       - --certificatesresolvers.letsencrypt.acme.storage=/proxy/letsencrypt.json
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
-
-      # Entrypoint 'bumblebee-secure'
       - --entrypoints.bumblebee-secure.address=:443
-      # Entrypoint 'guacamole-secure'
       - --entrypoints.guacamole-secure.address=:9000
-      # Entrypoint 'keycloak-secure'
       - --entrypoints.keycloak-secure.address=:8443
-      # Entrypoint 'phpmyadmin-secure'
       - --entrypoints.phpmyadmin-secure.address=:8306
     ports:
-      # The bumblebee port
       - 443:443
-      # The guacamole port
       - 9000:9000
-      # The keycloak port
       - 8443:8443
-      # The phpmyadmin port
       - 8306:8306
-      # Dashboard
-      # - "8080:8080"
     labels:
-      #  Enable traefik to expose the provider
       - "traefik.enable=true"
     volumes:
-      # Allow listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
       - /docker-data/proxy_data:/proxy
     healthcheck:
-      test: ["CMD-SHELL", "true"]  # TODO
+      test: ["CMD-SHELL", "true"]
 
   user_service:
     build:
       context: ./user_service
     image: user_service
     environment:
+      <<: *bb_env
       FLASK_ENV: development
     ports:
       - "5000:5000"
@@ -318,9 +265,7 @@ services:
       - "traefik.http.middlewares.user_service-https.redirectscheme.port=443"
       - "traefik.http.routers.user_service.middlewares=user_service-https"
 
-
 volumes:
   mariadb_data:
   redis_data:
   proxy_data:
-
